@@ -8,6 +8,17 @@ namespace Utils
     std::ostream& write_vec(const std::vector<T>& to_write, std::ostream& out, char sep = ' ', bool endline = true);
 }
 
+template <typename T>
+std::ostream& write_vec(const std::vector<T>& to_write, std::ostream& out, char sep, bool endline)
+{
+    for(const T& it : to_write)
+    {
+        out<<*it<<sep;
+        if(endline)
+            out<<std::endl;
+    }
+    return out;
+}
 
 template <typename T>
 std::ostream& operator << (const std::vector<T>& to_write, std::ostream& out)
