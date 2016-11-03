@@ -1,5 +1,13 @@
+#include <cassert>
+
 #include "rank_selection.hpp"
 
+
+///*******************************************************************************************************************************************************************
+/// Class that implements an elit selection
+///  N T N_threads   template parameters are the same as those from Selection class
+/// The best "nb_to_keep" elements are kept according to their quality, other are selected with a selection that can be specified (rank selection by default)
+///*******************************************************************************************************************************************************************
 
 template <size_t N, typename T, size_t N_threads = 1>
 class Elit_Selection : public Selection<N,T,N_threads>

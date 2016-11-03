@@ -1,3 +1,5 @@
+#include <random>
+
 #include "selection.hpp"
 
 
@@ -17,16 +19,26 @@ class Quality_Selection : public Selection<N,T,N_threads>
 
     private:
         std::array<std::array<bool, N>, N_threads> marked;
+        static std::default_random_engine random_engine;
+        static std::uniform_real_distribution<T> distrib;
 };
 
 
 template <size_t N, typename T, size_t N_threads>
+std::default_random_engine Quality_Selection<N,T,N_threads>::random_engine;
+
+template <size_t N, typename T, size_t N_threads>
+std::uniform_real_distribution<T> Quality_Selection<N,T,N_threads>::distrib(T(0),T(1));
+
+
+template <size_t N, typename T, size_t N_threads>
 Quality_Selection<N,T,N_threads>::Quality_Selection(int id) :
-    Selection<N,T,N_threads>(id)
+    Selection<N,T,N_threads>(id),
+    distrib(T(0.0),T(1.0))
 {}
 
 template <size_t N, typename T, size_t N_threads>
-const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::array<T, N>& qualities, int begin_at)
+const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::array<T, N>& qualities, int begin_at) throw ()
 {
     index_after_sorting(qualities, begin_at, selected_sorted[thread_id], selected_sorted_reversed[thread_id]);
 
@@ -37,7 +49,7 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
     int j = 0, tmp = -1, min_offset = begin_at-1;
     for(int i=begin_at; i<N; i++)
     {
-        T random_01 =  (rand()%X)/X;
+        T random_01 = distrib(random_engine);
         T cumulated = 0;
         index = 0;
         tmp = -1;
@@ -54,7 +66,8 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         }
 
         if(tmp<0)
-            throw Exception;
+            throw;
+
         if(j>=N)
         {
             j = tmp;
