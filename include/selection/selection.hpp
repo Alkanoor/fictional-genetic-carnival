@@ -14,7 +14,7 @@ class Selection
     public:
         Selection(int thread_id=0);
 
-        virtual const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0) = 0;
+        virtual const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0, bool already_sorted=false) = 0 throw ();
 
         const std::array<int, N>& get_sorted()
         {return selected_sorted;}
@@ -28,6 +28,13 @@ class Selection
         static std::array<std::array<int, N>, N_threads> selected_sorted;
         static std::array<std::array<int, N>, N_threads> selected_sorted_reversed;
 };
+
+
+template <size_t N, typename T, size_t N_threads>
+std::array<std::array<int, N>, N_threads> Selection<N,T,N_threads>::selected_sorted;
+
+template <size_t N, typename T, size_t N_threads>
+std::array<std::array<int, N>, N_threads> Selection<N,T,N_threads>::selected_sorted_reversed;
 
 
 template <size_t N, typename T, size_t N_threads>

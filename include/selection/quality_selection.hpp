@@ -1,6 +1,7 @@
 #include <random>
 
 #include "selection.hpp"
+#include "utils.hpp"
 
 
 ///*********************************************************************************
@@ -15,7 +16,7 @@ class Quality_Selection : public Selection<N,T,N_threads>
     public:
         Quality_Selection(int thread_id=0);
 
-        const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0);
+        const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0, bool already_sorted=false) throw ();
 
     private:
         std::array<std::array<bool, N>, N_threads> marked;
@@ -38,9 +39,10 @@ Quality_Selection<N,T,N_threads>::Quality_Selection(int id) :
 {}
 
 template <size_t N, typename T, size_t N_threads>
-const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::array<T, N>& qualities, int begin_at) throw ()
+const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::array<T, N>& qualities, int begin_at, bool already_sorted) throw ()
 {
-    index_after_sorting(qualities, begin_at, selected_sorted[thread_id], selected_sorted_reversed[thread_id]);
+    if(!already_sorted)
+        Utils::index_after_sorting(qualities, begin_at, selected_sorted[thread_id], selected_sorted_reversed[thread_id]);
 
     T max_cumulated = 0;
     for(int i=begin_at; i<N; i++)
