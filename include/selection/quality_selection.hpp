@@ -1,7 +1,11 @@
+#ifndef QUALITY_SELECTION_HPP
+#define QUALITY_SELECTION_HPP
+
+
 #include <random>
 
 #include "selection.hpp"
-#include "utils.hpp"
+#include "../utils/util.hpp"
 
 
 ///*********************************************************************************
@@ -34,21 +38,20 @@ std::uniform_real_distribution<T> Quality_Selection<N,T,N_threads>::distrib(T(0)
 
 template <size_t N, typename T, size_t N_threads>
 Quality_Selection<N,T,N_threads>::Quality_Selection(int id) :
-    Selection<N,T,N_threads>(id),
-    distrib(T(0.0),T(1.0))
+    Selection<N,T,N_threads>(id)
 {}
 
 template <size_t N, typename T, size_t N_threads>
 const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::array<T, N>& qualities, int begin_at, bool already_sorted) throw ()
 {
     if(!already_sorted)
-        Utils::index_after_sorting(qualities, begin_at, selected_sorted[thread_id], selected_sorted_reversed[thread_id]);
+        Utils::index_after_sorting(qualities, begin_at, Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id], Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id]);
 
     T max_cumulated = 0;
     for(int i=begin_at; i<N; i++)
         max_cumulated += qualities[i];
 
-    int j = 0, tmp = -1, min_offset = begin_at-1;
+    int j = 0, tmp = -1, min_offset = begin_at-1, index;
     for(int i=begin_at; i<N; i++)
     {
         T random_01 = distrib(random_engine);
@@ -57,8 +60,8 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         tmp = -1;
         for(j=min_offset+1; j<N; j++)
         {
-            index = selected_sorted_reversed[thread_id][j];
-            if(!marked[thread_id][index])
+            index = Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][j];
+            if(!marked[Selection<N,T,N_threads>::thread_id][index])
             {
                 tmp = j;
                 cumulated += qualities[index];
@@ -73,16 +76,18 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         if(j>=N)
         {
             j = tmp;
-            index = selected_sorted_reversed[thread_id][j];
+            index = Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][j];
         }
-        marked[thread_id][index] = true;
+        marked[Selection<N,T,N_threads>::thread_id][index] = true;
         max_cumulated -= qualities[index];
         if(j==min_offset+1)
             min_offset = j;
 
-        selected_sorted[thread_id][i] = index;
+        Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][i] = index;
     }
 
     for(int i=begin_at; i<N; i++)
-        selected_sorted_reversed[thread_id][selected_sorted[thread_id][i]] = i;
+        Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][i]] = i;
 }
+
+#endif

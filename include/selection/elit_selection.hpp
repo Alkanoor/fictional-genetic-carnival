@@ -1,3 +1,8 @@
+#ifndef ELIT_SELECTION_HPP
+#define ELIT_SELECTION_HPP
+
+
+#include <memory>
 #include <cassert>
 
 #include "rank_selection.hpp"
@@ -42,7 +47,7 @@ template <size_t N, typename T, size_t N_threads>
 const std::array<int,N>& Elit_Selection<N,T,N_threads>::apply(const std::array<T,N>& qualities, int begin_at, bool already_sorted) throw ()
 {
     if(!already_sorted)
-        index_after_sorting(qualities, begin_at, selected_sorted[thread_id], selected_sorted_reversed[thread_id]);
+        Utils::index_after_sorting(qualities, begin_at, selected_sorted[thread_id], selected_sorted_reversed[thread_id]);
     const std::array<int,N>& temp = default_selection->apply(qualities, number_individuals_to_keep);
     for(int i=number_individuals_to_keep; i<N; i++)
     {
@@ -51,3 +56,5 @@ const std::array<int,N>& Elit_Selection<N,T,N_threads>::apply(const std::array<T
     }
     return selected_sorted[thread_id];
 }
+
+#endif

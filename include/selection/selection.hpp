@@ -1,3 +1,7 @@
+#ifndef SELECTION_HPP
+#define SELECTION_HPP
+
+
 #include <array>
 
 
@@ -14,7 +18,7 @@ class Selection
     public:
         Selection(int thread_id=0);
 
-        virtual const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0, bool already_sorted=false) = 0 throw ();
+        virtual const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0, bool already_sorted=false) throw () = 0;
 
         const std::array<int, N>& get_sorted()
         {return selected_sorted;}
@@ -43,3 +47,5 @@ Selection<N,T,N_threads>::Selection(int id) :
 {
     assert(thread_id<N_threads);
 }
+
+#endif

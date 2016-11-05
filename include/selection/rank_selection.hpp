@@ -1,5 +1,9 @@
+#ifndef RANK_SELECTION_HPP
+#define RANK_SELECTION_HPP
+
+
 #include "selection.hpp"
-#include "utils.hpp"
+#include "../utils/util.hpp"
 
 
 ///*********************************************************************************
@@ -53,3 +57,5 @@ U Rank_Selection<N,T,U,N_threads>::basic_conversion(U offset, int rank, int size
 {
     return offset-U(rank)/U(size);
 }
+
+#endif
