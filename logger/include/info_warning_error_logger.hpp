@@ -104,7 +104,7 @@ void Info_Warning_Error_Logger::info(T... args)
     {
         if(printDateAuto)
             (**it)<<String_Factory::toString('<')<<date()<<"> ";
-        (**it)<<"Info : "<<String_Factory::toString(args...);
+        (**it)<<"[Info] : "<<String_Factory::toString(args...);
         if(endLineAuto)
             (*it)->writeEndline("");
     }
@@ -117,7 +117,7 @@ void Info_Warning_Error_Logger::warning(T... args)
     {
         if(printDateAuto)
             (**it)<<String_Factory::toString('<')<<date()<<"> ";
-        (**it)<<"Warning : "<<String_Factory::toString(args...);
+        (**it)<<"[Warning] : "<<String_Factory::toString(args...);
         if(endLineAuto)
             (*it)->writeEndline("");
     }
@@ -130,7 +130,7 @@ void Info_Warning_Error_Logger::error(T... args)
     {
         if(printDateAuto)
             (**it)<<String_Factory::toString('<')<<date()<<"> ";
-        (**it)<<"Error : "<<String_Factory::toString(args...);
+        (**it)<<"[Error] : "<<String_Factory::toString(args...);
         if(endLineAuto)
             (*it)->writeEndline("");
     }
