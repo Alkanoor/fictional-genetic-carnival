@@ -36,6 +36,8 @@ int main(int argc, char* argv[])
             {selections[0],selections[1],selections[2],selections[3]},
             {0.1,0.2,0.3,0.4})));
 
+    std::cout<<"[+] Initialization finished"<<std::endl;
+
     std::array<double,10> qualities = {0.5,0.9,0.75,0.55,3,100,0.01,2.5,2.7,0.88};
     //std::array<int,10> index;
 
@@ -46,6 +48,11 @@ int main(int argc, char* argv[])
 
     std::ofstream ofs(log_file, std::ios::trunc|std::ios::out);
     for(int i=0; i<n_tests; i++)
+    {
+        std::cout<<"[+] "<<i<<"th test"<<std::endl;
+        ofs<<"========================"<<std::endl;
+        ofs<<"Test "<<i<<std::endl;
+        ofs<<"========================"<<std::endl;
         for(int j=0; j<(int)tests.size(); j++)
         {
             ofs<<tests[j]<<" :";
@@ -54,5 +61,6 @@ int main(int argc, char* argv[])
             auto temp_index = selections[j]->apply(qualities, 0);
             ofs<<temp_index<<std::endl;
         }
+    }
     return 0;
 }

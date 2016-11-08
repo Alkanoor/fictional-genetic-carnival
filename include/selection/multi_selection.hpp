@@ -81,14 +81,15 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
         chosen_selection[Selection<N,T,N_threads>::thread_id][j] = i;
     }
 
-    std::vector<const std::array<int,N>&> temp_selected;
-    std::vector<const std::array<int,N>&> temp_selected_reversed;
+    std::array<const std::array<int,N>*, M> temp_selected;
+    std::array<const std::array<int,N>*, M> temp_selected_reversed;
     for(int i=0; i<M; i++)
     {
-        temp_selected[i].push_back(selections[i]->apply(qualities, begin_at));
-        temp_selected_reversed[i].push_back(selections[i]->get_sorted_reversed());
+        temp_selected[i] = selections[i]->apply_pointer(qualities, begin_at, already_sorted);
+        temp_selected_reversed[i] = selections[i]->get_sorted_reversed_pointer();
     }
 
+    std::array<int,M> mins;
     for(int i=0; i<M; i++)
     {
         mins[i] = 0;
@@ -106,12 +107,12 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
         if(o>=N)
             throw;
 
-        Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j] = temp_selected[index][o];
+        Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j] = (*temp_selected[index])[o];
         Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j]] = j;
         marked[Selection<N,T,N_threads>::thread_id][index][o] = true;
         for(int i=0; i<M; i++)
         {
-            int p = temp_selected_reversed[temp_selected[i][o]];
+            int p = (*temp_selected_reversed[i])[(*temp_selected[i])[o]];
             marked[Selection<N,T,N_threads>::thread_id][i][p] = true;
 
             if(p==mins[i]+1)

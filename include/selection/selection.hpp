@@ -19,12 +19,20 @@ class Selection
         Selection(int thread_id=0);
 
         virtual const std::array<int, N>& apply(const std::array<T, N>& qualities, int begin_at=0, bool already_sorted=false) throw () = 0;
+        const std::array<int, N>* apply_pointer(const std::array<T, N>& qualities, int begin_at=0, bool already_sorted=false) throw ()
+        {apply(qualities, begin_at, already_sorted); return &selected_sorted[thread_id];}
 
         const std::array<int, N>& get_sorted()
-        {return selected_sorted;}
+        {return selected_sorted[thread_id];}
 
         const std::array<int, N>& get_sorted_reversed()
-        {return selected_sorted_reversed;}
+        {return selected_sorted_reversed[thread_id];}
+
+        const std::array<int, N>* get_sorted_pointer()
+        {return &selected_sorted[thread_id];}
+
+        const std::array<int, N>* get_sorted_reversed_pointer()
+        {return &selected_sorted_reversed[thread_id];}
 
     protected:
         int thread_id;

@@ -3,6 +3,7 @@
 
 
 #include <functional>
+#include <algorithm>
 #include <ostream>
 #include <vector>
 #include <array>
@@ -47,7 +48,7 @@ void Utils::index_after_sorting(const std::array<T, N>& qualities, int begin_at,
 }
 
 template <typename T>
-std::ostream& Utils::write_vec<T>(const std::vector<T>& to_write, std::ostream& out, char sep, bool endline)
+std::ostream& Utils::write_vec(const std::vector<T>& to_write, std::ostream& out, char sep, bool endline)
 {
     for(const T& it : to_write)
     {
@@ -59,7 +60,7 @@ std::ostream& Utils::write_vec<T>(const std::vector<T>& to_write, std::ostream& 
 }
 
 template <typename T, size_t N>
-std::ostream& Utils::write_vec<T>(const std::array<T,N>& to_write, std::ostream& out, char sep, bool endline)
+std::ostream& Utils::write_vec(const std::array<T,N>& to_write, std::ostream& out, char sep, bool endline)
 {
     for(const T& it : to_write)
     {
