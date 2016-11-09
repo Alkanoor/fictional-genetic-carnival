@@ -34,6 +34,12 @@ class Selection
         const std::array<int, N>* get_sorted_reversed_pointer()
         {return &selected_sorted_reversed[thread_id];}
 
+        void set_selected_sorted(const std::array<int, N>& a)
+        {selected_sorted[thread_id] = a;}
+
+        void set_selected_sorted_reversed(const std::array<int, N>& a)
+        {selected_sorted_reversed[thread_id] = a;}
+
     protected:
         int thread_id;
 

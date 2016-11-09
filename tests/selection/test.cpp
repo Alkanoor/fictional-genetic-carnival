@@ -2,11 +2,12 @@
 #include <fstream>
 #include <iostream>
 
-#include "elit_selection.hpp"
-#include "rank_selection.hpp"
-#include "multi_selection.hpp"
-#include "quality_selection.hpp"
+#include "selection/include/elit_selection.hpp"
+#include "selection/include/rank_selection.hpp"
+#include "selection/include/multi_selection.hpp"
+#include "selection/include/quality_selection.hpp"
 
+//g++ -std=c++11 -I../../include/utils -I../.. test.cpp -o test -L../../logger/bin -llog
 
 int main(int argc, char* argv[])
 {
@@ -18,6 +19,9 @@ int main(int argc, char* argv[])
             std::cout<<"[-] Usage [log file] (number of tests)"<<std::endl;
         return 1;
     }
+
+    srand(time(0));
+    Easy_Log_In_File_Debug::getInfoLog()->setDateAuto(false);
 
     std::string log_file(argv[1]);
     int n_tests = 5;

@@ -1,2 +1,8 @@
 genetics/*
 .git
+*.so
+logfile
+test
+*.infoLog
+*.errorLog
+*.warningLog

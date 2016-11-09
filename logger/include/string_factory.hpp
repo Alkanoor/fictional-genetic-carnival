@@ -106,7 +106,23 @@ inline std::string String_Factory::toString(unsigned int val)
 }
 
 template <>
+inline std::string String_Factory::toString(long unsigned int val)
+{
+    std::ostringstream ofs;
+    ofs<<val;
+    return ofs.str();
+}
+
+template <>
 inline std::string String_Factory::toString(float val)
+{
+    std::ostringstream ofs;
+    ofs<<val;
+    return ofs.str();
+}
+
+template <>
+inline std::string String_Factory::toString(double val)
 {
     std::ostringstream ofs;
     ofs<<val;

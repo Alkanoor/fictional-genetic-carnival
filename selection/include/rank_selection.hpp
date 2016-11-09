@@ -3,7 +3,7 @@
 
 
 #include "selection.hpp"
-#include "../utils/util.hpp"
+#include "utils/util.hpp"
 #include "quality_selection.hpp"
 
 
@@ -42,7 +42,7 @@ std::array<std::array<U, N>, N_threads> Rank_Selection<N,T,U,N_threads>::selecte
 template <size_t N, typename T, typename U, size_t N_threads>
 Rank_Selection<N,T,U,N_threads>::Rank_Selection(int id) :
     Selection<N,T,N_threads>(id),
-    functor_to_be_applied_on_ranks(std::bind(&Rank_Selection<N,T,U,N_threads>::basic_conversion, U(2), std::placeholders::_1, std::placeholders::_2))
+    functor_to_be_applied_on_ranks(std::bind(&Rank_Selection<N,T,U,N_threads>::basic_conversion, U(1.2), std::placeholders::_1, std::placeholders::_2))
 {}
 
 template <size_t N, typename T, typename U, size_t N_threads>
@@ -55,6 +55,10 @@ template <size_t N, typename T, typename U, size_t N_threads>
 const std::array<int, N>& Rank_Selection<N,T,U,N_threads>::apply(const std::array<T, N>& qualities, int begin_at, bool already_sorted) throw ()
 {
     Utils::index_after_sorting(qualities, begin_at, Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id], selected_sorted_reversed_modified[Selection<N,T,N_threads>::thread_id], functor_to_be_applied_on_ranks);
+    std::iota(Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id].begin(), Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id].end(), 0);
+    rank_selection[Selection<N,T,N_threads>::thread_id].set_selected_sorted(Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id]);
+    rank_selection[Selection<N,T,N_threads>::thread_id].set_selected_sorted_reversed(Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id]);
+
     Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id] = rank_selection[Selection<N,T,N_threads>::thread_id].apply(selected_sorted_reversed_modified[Selection<N,T,N_threads>::thread_id], begin_at, true);
     Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id] = rank_selection[Selection<N,T,N_threads>::thread_id].get_sorted_reversed();
     return Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id];

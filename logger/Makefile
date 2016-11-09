@@ -6,10 +6,12 @@ VPATH=.
 
 RELEASE_DIR = bin
 EXEC = $(RELEASE_DIR)/test
+LIB = $(RELEASE_DIR)/liblog.so
 
 CC = g++
-CFLAGS = -Wall -Werror -O1 -std=c++11
-LDFLAGS =
+CFLAGS = -Wall -Werror -O1 -std=c++11 -fPIC
+LDFLAGS = -fPIC
+LDFLAGS_LIB = -fPIC -shared
 
 LOG_DIRS = logs logs/uselessDir logs/uselessDirBis
 
@@ -24,6 +26,9 @@ $(OBJ_DIR)/%.o: %.cpp
 
 test: all
 	./$(EXEC)
+
+lib: createDir $(OBJ)
+	$(CC) -o $(LIB) $(OBJ) $(LDFLAGS_LIB)
 
 createDir:
 	@mkdir -p $(OBJ_DIR)

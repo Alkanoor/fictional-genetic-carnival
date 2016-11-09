@@ -31,7 +31,7 @@ void Utils::index_after_sorting(const std::array<T, N>& qualities, int begin_at,
     auto begin = sorted.begin();
     begin += begin_at;
     std::iota(begin, sorted.end(), 0);
-    std::sort(begin, sorted.end(), [&](int a, int b) {return qualities[a+begin_at] < qualities[b+begin_at];});
+    std::sort(begin, sorted.end(), [&](int a, int b) {return qualities[a+begin_at] > qualities[b+begin_at];});
     for(int i=begin_at; i<N; i++)
         sorted_reversed[sorted[i]] = functor_to_be_applied_on_ranks(i, N-1);
 }
@@ -42,7 +42,7 @@ void Utils::index_after_sorting(const std::array<T, N>& qualities, int begin_at,
     auto begin = sorted.begin();
     begin += begin_at;
     std::iota(begin, sorted.end(), 0);
-    std::sort(begin, sorted.end(), [&](int a, int b) {return qualities[a+begin_at] < qualities[b+begin_at];});
+    std::sort(begin, sorted.end(), [&](int a, int b) {return qualities[a+begin_at] > qualities[b+begin_at];});
     for(int i=begin_at; i<N; i++)
         sorted_reversed[sorted[i]] = i;
 }
