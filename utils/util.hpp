@@ -11,6 +11,9 @@
 
 namespace Utils
 {
+    template <size_t N, typename U>
+    void apply(int begin_at, std::array<int, N>& sorted, std::array<U, N>& sorted_reversed, const std::function<U(int, int)>& functor_to_be_applied_on_ranks);
+
     template <size_t N, typename T, typename U>
     void index_after_sorting(const std::array<T, N>& qualities, int begin_at, std::array<int, N>& sorted, std::array<U, N>& sorted_reversed, const std::function<U(int, int)>& functor_to_be_applied_on_ranks);
 
@@ -18,12 +21,18 @@ namespace Utils
     void index_after_sorting(const std::array<T, N>& qualities, int begin_at, std::array<int, N>& sorted, std::array<int, N>& sorted_reversed);
 
     template <typename T>
-    std::ostream& write_vec(const std::vector<T>& to_write, std::ostream& out, char sep = ' ', bool endline = true);
+    std::ostream& write_vec(const std::vector<T>& to_write, std::ostream& out, char sep = ' ', bool endline = false);
 
     template <typename T, size_t N>
-    std::ostream& write_vec(const std::array<T,N>& to_write, std::ostream& out, char sep = ' ', bool endline = true);
+    std::ostream& write_vec(const std::array<T,N>& to_write, std::ostream& out, char sep = ' ', bool endline = false);
 }
 
+template <size_t N, typename U>
+void Utils::apply(int begin_at, std::array<int, N>& sorted, std::array<U, N>& sorted_reversed, const std::function<U(int, int)>& functor_to_be_applied_on_ranks)
+{
+    for(int i=begin_at; i<N; i++)
+        sorted_reversed[sorted[i]] = functor_to_be_applied_on_ranks(i, N-1);
+}
 
 template <size_t N, typename T, typename U>
 void Utils::index_after_sorting(const std::array<T, N>& qualities, int begin_at, std::array<int, N>& sorted, std::array<U, N>& sorted_reversed, const std::function<U(int, int)>& functor_to_be_applied_on_ranks)
@@ -32,8 +41,7 @@ void Utils::index_after_sorting(const std::array<T, N>& qualities, int begin_at,
     begin += begin_at;
     std::iota(begin, sorted.end(), 0);
     std::sort(begin, sorted.end(), [&](int a, int b) {return qualities[a+begin_at] > qualities[b+begin_at];});
-    for(int i=begin_at; i<N; i++)
-        sorted_reversed[sorted[i]] = functor_to_be_applied_on_ranks(i, N-1);
+    apply(begin_at, sorted, sorted_reversed, functor_to_be_applied_on_ranks);
 }
 
 template <size_t N, typename T>

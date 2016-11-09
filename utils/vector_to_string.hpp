@@ -11,6 +11,7 @@ class Vector_To_String
 {
     public:
         Vector_To_String(T v, const std::string& separator=", ", const std::string& begin="[", const std::string& end="]");
+        Vector_To_String(const T* v, const std::string& separator=", ", const std::string& begin="[", const std::string& end="]");
 
         const std::string& toString() const;
 
@@ -28,6 +29,22 @@ Vector_To_String<T>::Vector_To_String(T v, const std::string& separator, const s
     {
         std::ostringstream os;
         os<<v[i];
+        represented += os.str();
+        if(i+1<l)
+            represented += separator;
+    }
+    represented += end;
+}
+
+template <typename T>
+Vector_To_String<T>::Vector_To_String(const T* v, const std::string& separator, const std::string& begin, const std::string& end)
+{
+    int l = (int)v->size();
+    represented += begin;
+    for(int i=0; i<l; i++)
+    {
+        std::ostringstream os;
+        os<<(*v)[i];
         represented += os.str();
         if(i+1<l)
             represented += separator;

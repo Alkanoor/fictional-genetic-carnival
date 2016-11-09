@@ -2,6 +2,8 @@
 #define QUALITY_SELECTION_HPP
 
 
+//#define QUALITY_SELECTION_DEBUG
+
 #include <chrono>
 #include <random>
 
@@ -29,6 +31,8 @@ class Quality_Selection : public Selection<N,T,N_threads>
         std::array<std::array<bool, N>, N_threads> marked;
         static std::default_random_engine random_engine;
         static std::uniform_real_distribution<T> distrib;
+
+        typedef Selection<N,T,N_threads> Selection_;
 };
 
 
@@ -47,22 +51,30 @@ Quality_Selection<N,T,N_threads>::Quality_Selection(int id) :
 template <size_t N, typename T, size_t N_threads>
 const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::array<T, N>& qualities, int begin_at, bool already_sorted) throw ()
 {
-    auto logger = Easy_Log_In_File_Debug::getInfoLog();
+    #ifdef QUALITY_SELECTION_DEBUG
+        auto logger = Easy_Log_In_File_Debug::getInfoLog();
+    #endif
 
     if(!already_sorted)
-        Utils::index_after_sorting(qualities, begin_at, Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id], Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id]);
+        Utils::index_after_sorting(qualities, begin_at, Selection_::selected_sorted[Selection_::thread_id], Selection_::selected_sorted_reversed[Selection_::thread_id]);
 
     T max_cumulated = 0;
     for(int i=begin_at; i<N; i++)
-        max_cumulated += qualities[i];
+    {
+        marked[Selection_::thread_id][i] = false;
+        max_cumulated += qualities[Selection_::selected_sorted[Selection_::thread_id][i]];
+    }
 
-    logger->write("Applying on quality selection with ", qualities.size());
-    logger->write("Max cumulated : ", max_cumulated);
-    logger->write(Vector_To_String<const std::array<T, N>&>(qualities));
-    logger->write(Vector_To_String<const std::array<int, N>&>(Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id]));
-    logger->write(Vector_To_String<const std::array<int, N>&>(Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id]));
-    logger->endLine();
+    #ifdef QUALITY_SELECTION_DEBUG
+        logger->write("Applying on quality selection with ", qualities.size());
+        logger->write("Max cumulated : ", max_cumulated);
+        logger->write(Vector_To_String<const std::array<T, N>&>(qualities));
+        logger->write(Vector_To_String<const std::array<int, N>&>(Selection_::selected_sorted[Selection_::thread_id]));
+        logger->write(Vector_To_String<const std::array<int, N>&>(Selection_::selected_sorted_reversed[Selection_::thread_id]));
+        logger->endLine();
+    #endif
 
+    std::vector<int> indexes(N-begin_at);
     int j = 0, tmp = -1, min_offset = begin_at-1, index;
     for(int i=begin_at; i<N; i++)
     {
@@ -72,20 +84,24 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         tmp = -1;
         for(j=min_offset+1; j<N; j++)
         {
-            index = Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j];
-            if(!marked[Selection<N,T,N_threads>::thread_id][j])
+            index = Selection_::selected_sorted[Selection_::thread_id][j];
+            if(!marked[Selection_::thread_id][j])
             {
                 tmp = j;
-                logger->write("Adding ", index, " => ", qualities[index]);
+                #ifdef QUALITY_SELECTION_DEBUG
+                    logger->write("Adding ", index, " => ", qualities[index]);
+                #endif
                 cumulated += qualities[index];
                 if(cumulated>random_01*max_cumulated)
                     break;
             }
         }
 
-        logger->write("Iteration ", i, " => random = ", random_01, " giving ", random_01*max_cumulated);
-        logger->write("j index and cumulated obtained : ", j, " ", index, " ", cumulated);
-        logger->write("Gives min_offset tmp : ", min_offset, " ", tmp);
+        #ifdef QUALITY_SELECTION_DEBUG
+            logger->write("Iteration ", i, " => random = ", random_01, " giving ", random_01*max_cumulated);
+            logger->write("j index and cumulated obtained : ", j, " ", index, " ", cumulated);
+            logger->write("Gives min_offset tmp : ", min_offset, " ", tmp);
+        #endif
 
         if(tmp<0)
             throw;
@@ -93,29 +109,37 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         if(j>=N)
         {
             j = tmp;
-            index = Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j];
+            index = Selection_::selected_sorted[Selection_::thread_id][j];
         }
-        marked[Selection<N,T,N_threads>::thread_id][j] = true;
+        marked[Selection_::thread_id][j] = true;
         max_cumulated -= qualities[index];
         if(j==min_offset+1)
         {
             min_offset = j;
-            while(min_offset+1<N && marked[Selection<N,T,N_threads>::thread_id][min_offset+1])
+            while(min_offset+1<N && marked[Selection_::thread_id][min_offset+1])
                 min_offset++;
         }
 
-        logger->write("Au final : j min_offset max_cumulated index : ", j, " ", min_offset," ", max_cumulated, " ", index);
-        logger->endLine();
-        Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][index] = i;
+        #ifdef QUALITY_SELECTION_DEBUG
+            logger->write("Au final : j min_offset max_cumulated index : ", j, " ", min_offset," ", max_cumulated, " ", index);
+            logger->endLine();
+        #endif
+        Selection_::selected_sorted_reversed[Selection_::thread_id][index] = i;
+        indexes[i-begin_at] =  index;
     }
 
-    for(int i=begin_at; i<N; i++)
-        Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][i]] = i;
+    for(int i : indexes)
+        Selection_::selected_sorted[Selection_::thread_id][Selection_::selected_sorted_reversed[Selection_::thread_id][i]] = i;
 
-    logger->write("AT THE END :");
-    logger->write(Vector_To_String<const std::array<int, N>&>(Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id]));
-    logger->write(Vector_To_String<const std::array<int, N>&>(Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id]));
-    logger->endLine();
+    #ifdef QUALITY_SELECTION_DEBUG
+        logger->write("AT THE END (quality) :");
+        logger->write(Vector_To_String<const std::array<int, N>&>(Selection_::selected_sorted[Selection_::thread_id]));
+        logger->write(Vector_To_String<const std::array<int, N>&>(Selection_::selected_sorted_reversed[Selection_::thread_id]));
+        logger->endLine();
+    #endif
+
+    return Selection_::selected_sorted[Selection_::thread_id];
 }
+
 
 #endif

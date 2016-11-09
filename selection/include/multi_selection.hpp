@@ -2,6 +2,9 @@
 #define MULTI_SELECTION_HPP
 
 
+#define MULTI_SELECTION_DEBUG
+
+#include <chrono>
 #include <memory>
 #include <random>
 
@@ -33,6 +36,8 @@ class Multi_Selection : public Selection<N,T,N_threads>
         static std::array<std::array<std::array<bool, N>, M>, N_threads> marked;
         static std::default_random_engine random_engine;
         static std::uniform_real_distribution<U> distrib;
+
+        typedef Selection<N,T,N_threads> Selection_;
 };
 
 
@@ -43,7 +48,7 @@ template <size_t M, size_t N, typename T, typename U, size_t N_threads>
 std::array<std::array<std::array<bool, N>, M>, N_threads> Multi_Selection<M,N,T,U,N_threads>::marked;
 
 template <size_t M, size_t N, typename T, typename U, size_t N_threads>
-std::default_random_engine Multi_Selection<M,N,T,U,N_threads>::random_engine;
+std::default_random_engine Multi_Selection<M,N,T,U,N_threads>::random_engine(std::chrono::system_clock::now().time_since_epoch().count());
 
 template <size_t M, size_t N, typename T, typename U, size_t N_threads>
 std::uniform_real_distribution<U> Multi_Selection<M,N,T,U,N_threads>::distrib(U(0),U(1));
@@ -64,6 +69,11 @@ Multi_Selection<M,N,T,U,N_threads>::Multi_Selection(int thread_id, const std::ar
 template <size_t M, size_t N, typename T, typename U, size_t N_threads>
 const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::array<T,N>& qualities, int begin_at, bool already_sorted) throw ()
 {
+    #ifdef MULTI_SELECTION_DEBUG
+        auto logger = Easy_Log_In_File_Debug::getInfoLog();
+        logger->write("Applying on multi selection with ", qualities.size());
+    #endif
+
     for(int j=0; j<N; j++)
     {
         U random = distrib(random_engine);
@@ -78,15 +88,26 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
         if(i>=M)
             throw;
 
-        chosen_selection[Selection<N,T,N_threads>::thread_id][j] = i;
+        chosen_selection[Selection_::thread_id][j] = i;
+        #ifdef MULTI_SELECTION_DEBUG
+            logger->write("Chosen index for ", j, " : ", i);
+        #endif
     }
 
-    std::array<const std::array<int,N>*, M> temp_selected;
-    std::array<const std::array<int,N>*, M> temp_selected_reversed;
+    #ifdef MULTI_SELECTION_DEBUG
+        logger->write("Giving ", Vector_To_String<const std::array<int, N> >(&chosen_selection[Selection_::thread_id]));
+    #endif
+
+    std::array<std::array<int,N>, M> temp_selected;
+    std::array<std::array<int,N>, M> temp_selected_reversed;
     for(int i=0; i<M; i++)
     {
-        temp_selected[i] = selections[i]->apply_pointer(qualities, begin_at, already_sorted);
-        temp_selected_reversed[i] = selections[i]->get_sorted_reversed_pointer();
+        temp_selected[i] = selections[i]->apply(qualities, begin_at, already_sorted);
+        temp_selected_reversed[i] = selections[i]->get_sorted_reversed();
+        #ifdef MULTI_SELECTION_DEBUG
+            logger->write("For i=", i, " we have ", Vector_To_String<const std::array<int, N> >(&temp_selected[i]));
+            logger->write("And reversed : ", Vector_To_String<const std::array<int, N> >(&temp_selected_reversed[i]));
+        #endif
     }
 
     std::array<int,M> mins;
@@ -94,38 +115,54 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
     {
         mins[i] = 0;
         for(int j=0; j<N; j++)
-            marked[Selection<N,T,N_threads>::thread_id][i][j] = false;
+            marked[Selection_::thread_id][i][j] = false;
     }
 
     for(int j=0; j<N; j++)
     {
-        int index = chosen_selection[Selection<N,T,N_threads>::thread_id][j];
+        int index = chosen_selection[Selection_::thread_id][j];
         int o = mins[index];
-        while(o<N && marked[Selection<N,T,N_threads>::thread_id][index][o])
+        while(o<N && marked[Selection_::thread_id][index][o])
             o++;
+
+        #ifdef MULTI_SELECTION_DEBUG
+            logger->write("After analysis for j=", j, " we have index min o section[o] : ", index, " ", mins[index], " ", o, " => ", (temp_selected[index])[o]);
+        #endif
 
         if(o>=N)
             throw;
 
-        Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j] = (*temp_selected[index])[o];
-        Selection<N,T,N_threads>::selected_sorted_reversed[Selection<N,T,N_threads>::thread_id][Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id][j]] = j;
-        marked[Selection<N,T,N_threads>::thread_id][index][o] = true;
+        Selection_::selected_sorted[Selection_::thread_id][j] = temp_selected[index][o];
+        Selection_::selected_sorted_reversed[Selection_::thread_id][Selection_::selected_sorted[Selection_::thread_id][j]] = j;
         for(int i=0; i<M; i++)
         {
-            int p = (*temp_selected_reversed[i])[(*temp_selected[i])[o]];
-            marked[Selection<N,T,N_threads>::thread_id][i][p] = true;
+            int p = temp_selected_reversed[i][temp_selected[index][o]];
+            marked[Selection_::thread_id][i][p] = true;
 
-            if(p==mins[i]+1)
+            #ifdef MULTI_SELECTION_DEBUG
+                logger->write("For i=", i, " we have selected[o] p : ", temp_selected[i][o], " ", p);
+            #endif
+
+            if(p==mins[i])
             {
-                while(p<N && marked[Selection<N,T,N_threads>::thread_id][i][p])
+                while(p<N && marked[Selection_::thread_id][i][p])
                     p++;
                 if(p<N)
                     mins[i] = p;
             }
+
+            #ifdef MULTI_SELECTION_DEBUG
+                logger->write("New min ", i, " ", mins[i]);
+            #endif
         }
     }
 
-    return Selection<N,T,N_threads>::selected_sorted[Selection<N,T,N_threads>::thread_id];
+    #ifdef MULTI_SELECTION_DEBUG
+        logger->endLine();
+    #endif
+
+    return Selection_::selected_sorted[Selection_::thread_id];
 }
+
 
 #endif

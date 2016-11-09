@@ -3,6 +3,6 @@ genetics/*
 *.so
 logfile
 test
-*.infoLog
-*.errorLog
-*.warningLog
+*.infoLog*
+*.errorLog*
+*.warningLog*
