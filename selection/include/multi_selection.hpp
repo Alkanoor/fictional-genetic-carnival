@@ -2,7 +2,7 @@
 #define MULTI_SELECTION_HPP
 
 
-#define MULTI_SELECTION_DEBUG
+//#define MULTI_SELECTION_DEBUG
 
 #include <chrono>
 #include <memory>
