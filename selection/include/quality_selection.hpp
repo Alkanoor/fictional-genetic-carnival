@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <random>
+#include <stdexcept>
 
 #include "selection.hpp"
 #include "utils/util.hpp"
@@ -104,7 +105,7 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         #endif
 
         if(tmp<0)
-            throw;
+            throw std::runtime_error("Error: bad value in mult selection, should never happen. Please slap the developper.");
 
         if(j>=N)
         {

@@ -6,6 +6,7 @@
 #include "selection/include/rank_selection.hpp"
 #include "selection/include/multi_selection.hpp"
 #include "selection/include/quality_selection.hpp"
+#include "selection/include/absolute_selection.hpp"
 
 
 float predicate(int i, int N)
@@ -33,13 +34,14 @@ int main(int argc, char* argv[])
     if(argc>2)
         n_tests = atoi(argv[2]);
 
-    std::vector<std::string> tests = {"rank","quality","elit_rank","elit_quality","multi"};
+    std::vector<std::string> tests = {"rank","quality","elit_rank","elit_quality","absolut","multi"};
     std::vector<std::shared_ptr<Selection<10, double> > > selections;
 
     selections.push_back(std::shared_ptr<Selection<10, double> >(new Rank_Selection<10, double, float>(std::bind(predicate, std::placeholders::_1, std::placeholders::_2))));
     selections.push_back(std::shared_ptr<Selection<10, double> >(new Quality_Selection<10, double>()));
     selections.push_back(std::shared_ptr<Selection<10, double> >(new Elit_Selection<10, double>(1, selections[0])));
     selections.push_back(std::shared_ptr<Selection<10, double> >(new Elit_Selection<10, double>(2, selections[1])));
+    selections.push_back(std::shared_ptr<Selection<10, double> >(new Absolute_Selection<10, double>()));
     selections.push_back(std::shared_ptr<Selection<10, double> >(
         new Multi_Selection<4, 10, double, float>(
             {selections[0],selections[1],selections[2],selections[3]},

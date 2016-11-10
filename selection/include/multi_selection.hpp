@@ -7,6 +7,7 @@
 #include <chrono>
 #include <memory>
 #include <random>
+#include <stdexcept>
 
 #include "selection.hpp"
 
@@ -86,7 +87,7 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
         }
 
         if(i>=M)
-            throw;
+            throw std::runtime_error("Error: bad value in mult selection, should never happen. Please slap the developper.");
 
         chosen_selection[Selection_::thread_id][j] = i;
         #ifdef MULTI_SELECTION_DEBUG
