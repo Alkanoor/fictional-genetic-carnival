@@ -8,6 +8,16 @@ Thread_Pool::Thread_Pool(const std::vector<int>& id_threads) :
 size_t Thread_Pool::size() const
 {return id_threads.size();}
 
+void Thread_Pool::append(int id)
+{
+    id_threads.push_back(id);
+}
+
+void Thread_Pool::erase(int id)
+{
+    id_threads.erase(id_threads.find(id));
+}
+
 void Thread_Pool::add_to_thread(int id_in_pool, const std::function<void()>& to_exec)
 {
     assert(id_in_pool<(int)id_threads.size());

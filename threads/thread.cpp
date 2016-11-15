@@ -4,6 +4,7 @@
 
 
 std::map<int, Thread&> Thread::threads;
+Thread_Pool Thread::pool;
 
 
 Thread::Thread(int id, bool autostart, double sleep_between_instances, double sleep_between_operations, const std::function<void(double)>& sleep_function
@@ -18,11 +19,12 @@ Thread::Thread(int id, bool autostart, double sleep_between_instances, double sl
     is_running(false),
     is_stopped(true),
     terminated(false),
+    stop_when_task_finished(false),
     sleep_between_instances(sleep_between_instances),
     sleep_between_operations(sleep_between_operations),
     sleep_function(sleep_function)
     #ifdef LOG_EVENTS
-        , events_logger(info_logger),
+        , events_logger(info_logger)
     #endif
     #ifdef LOG_EXCEPTIONS
         , error_logger(error_logger)
@@ -32,6 +34,9 @@ Thread::Thread(int id, bool autostart, double sleep_between_instances, double sl
         throw std::runtime_error("Error: forbidden thread creation: same id as another thread");
 
     threads.emplace(id, *this);
+    #ifdef ADD_TO_DEFAULT_POOL
+        default_pool.append(id);
+    #endif
 
     if(autostart)
         start();
@@ -124,7 +129,7 @@ void Thread::terminate()
     thread.terminate();
 }
 
-void run()
+void Thread::run()
 {
     while(!is_stopped)
     {
@@ -156,36 +161,57 @@ void run()
             mutex_on_to_exec.unlock();
 
             sleep_function(sleep_between_operations);
+
+            if(stop_when_task_finished)
+            {
+                is_running = false;
+                is_stopped = true;
+                stop_when_task_finished = false;
+            }
         }
         sleep_function(sleep_between_instances);
     }
+
+    mutex_on_to_exec.lock();
+    to_exec.clear();
+    mutex_on_to_exec.unlock();
 }
 
-bool is_started() const
+bool Thread::is_started() const
 {return !is_stopped;}
 
-void add_to_thread(int id, const std::function<void()>& to_exec)
+void Thread::add_to_thread(int id, const std::function<void()>& to_exec)
 {
     threads[id].mutex_on_to_exec.lock();
     threads[id].to_exec.push_back(to_exec);
     threads[id].mutex_on_to_exec.unlock();
 }
 
-void add_to_thread_and_exec(int id, const std::function<void()>& to_exec)
+void Thread::add_to_thread_and_exec(int id, const std::function<void()>& to_exec)
 {
     threads[id].mutex_on_to_exec.lock();
     threads[id].to_exec.push_back(to_exec);
     threads[id].mutex_on_to_exec.unlock();
+
+    stop_when_task_finished = true;
 
     if(is_stopped)
         restart();
-
+    if(!is_running)
+        is_running = true;
 }
 
-static const Thread& get_thread(int id)
+static const Thread& Thread::get_thread(int id)
 {
     return threads[id];
 }
+
+#ifdef ADD_TO_DEFAULT_POOL
+    const Thread_Pool& Thread::get_default_pool()
+    {
+        return default_pool;
+    }
+#endif
 
 
 Thread::Thread()

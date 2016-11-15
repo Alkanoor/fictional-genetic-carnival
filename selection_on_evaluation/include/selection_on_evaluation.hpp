@@ -2,7 +2,6 @@
 #define SELECTION_ON_EVALUATION_HPP
 
 
-#include <array>
 #include <bitset>
 
 #include "genetics/include/genotype.hpp"

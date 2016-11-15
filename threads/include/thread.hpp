@@ -2,6 +2,7 @@
 #define THREAD_HPP
 
 
+#define ADD_TO_DEFAULT_POOL
 #define LOG_EXCEPTIONS
 #define LOG_EVENTS
 
@@ -10,6 +11,11 @@
 #include <functional>
 
 #include "logger/include/log_in_file.hpp"
+
+
+#ifdef ADD_TO_DEFAULT_POOL
+    class Thread_Pool;
+#endif
 
 
 ///****************************************************************
@@ -44,6 +50,9 @@ class Thread
         void add_to_thread_and_exec(int id, const std::function<void()>& to_exec);
 
         static const Thread& get_thread(int id);
+        #ifdef ADD_TO_DEFAULT_POOL
+            static const Thread_Pool& get_default_pool();
+        #endif
 
     private:
         Thread();
@@ -51,10 +60,12 @@ class Thread
         Thread& operator = (const Thread&);
 
         int thread_id;
+        std::thread thread;
 
         bool is_running;
         bool is_stopped;
         bool terminated;
+        bool stop_when_task_finished;
 
         double sleep_between_instances;
         double sleep_between_operations;
@@ -71,6 +82,9 @@ class Thread
         #endif
 
         static std::map<int, Thread&> threads;
+        #ifdef ADD_TO_DEFAULT_POOL
+            static Thread_Pool default_pool;
+        #endif
 };
 
 
