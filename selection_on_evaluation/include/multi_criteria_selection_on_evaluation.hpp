@@ -8,11 +8,14 @@
 
 #include "threads/include/thread.hpp"
 #include "selection_on_evaluation.hpp"
+#include "genetic/include/genotype.hpp"
 
 
 ///*****************************************************************************************
 /// Class that provides composition of evaluation and selection based on multiple criteria
 /// and which auto shares load among available threads
+///  Population_size  is the number of individuals in the population
+///  N_bits           is the number of bits which is used in genom
 ///*****************************************************************************************
 
 template <size_t Population_size, size_t N_bits>

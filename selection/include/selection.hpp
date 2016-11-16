@@ -5,12 +5,12 @@
 #include <array>
 
 
-///***********************************************************************
+///******************************************************************************
 /// Class that provides model for selection step during GA process
-///  N  is the number of individuals in the population
-///  T  is the type of quality which will be used to compare generations
+///  N         is the number of individuals in the population
+///  T         is the type of quality which will be used to compare generations
 ///  N_threads is the number of threads that may be used simultaneously
-///***********************************************************************
+///******************************************************************************
 
 template <size_t N, typename T, size_t N_threads = 1>
 class Selection
