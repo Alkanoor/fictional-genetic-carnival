@@ -7,7 +7,10 @@
 #define LOG_EVENTS
 
 
+#include <map>
+#include <mutex>
 #include <thread>
+#include <unistd.h>
 #include <functional>
 
 #include "logger/include/log_in_file.hpp"
@@ -34,6 +37,10 @@ class Thread
                     , const std::shared_ptr<Info_Warning_Error_Logger>& error_logger = Easy_Log_In_File::getErrorLog()
                 #endif
                );
+
+        Thread(Thread&& t);
+
+        friend void std::swap(Thread& t1, Thread& t2);
 
         bool start();               // launches the first part of the thread, is is_running, does nothing
         void restart();             // waits until the end of current operation but erase all remaining in queue, and restart cleanly

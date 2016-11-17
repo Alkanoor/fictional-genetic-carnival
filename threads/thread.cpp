@@ -1,10 +1,13 @@
 #include "include/thread.hpp"
+#include "include/thread_pool.hpp"
 
 #include <stdexcept>
 
 
 std::map<int, Thread&> Thread::threads;
-Thread_Pool Thread::pool;
+#ifdef ADD_TO_DEFAULT_POOL
+    Thread_Pool Thread::default_pool;
+#endif
 
 
 Thread::Thread(int id, bool autostart, double sleep_between_instances, double sleep_between_operations, const std::function<void(double)>& sleep_function
@@ -40,6 +43,11 @@ Thread::Thread(int id, bool autostart, double sleep_between_instances, double sl
 
     if(autostart)
         start();
+}
+
+Thread::Thread(Thread&& t)
+{
+    std::swap(*this, t);
 }
 
 bool Thread::start()
@@ -94,10 +102,20 @@ void Thread::restart()
 }
 
 void Thread::pause_processing()
-{is_running = false;}
+{
+    is_running = false;
+    #ifdef LOG_EVENTS
+        events_logger->info("Pausing thread ", thread_id);
+    #endif
+}
 
 void Thread::continue_processing()
-{is_running = true;}
+{
+    is_running = true;
+    #ifdef LOG_EVENTS
+        events_logger->info("Continuing thread ", thread_id);
+    #endif
+}
 
 void Thread::stop()
 {
@@ -126,16 +144,23 @@ void Thread::terminate()
         events_logger->info("Terminating thread ", thread_id);
     #endif
     terminated = true;
-    thread.terminate();
+    std::terminate();
 }
 
 void Thread::run()
 {
+    #ifdef LOG_EVENTS
+        bool processing = false;
+    #endif
+
     while(!is_stopped)
     {
         while(is_running)
         {
             mutex_on_to_exec.lock();
+            #ifdef LOG_EVENTS
+                processing = to_exec.size();
+            #endif
             while(to_exec.size())
             {
                 std::function<void()> current_exec = *(to_exec.begin());
@@ -160,6 +185,11 @@ void Thread::run()
             }
             mutex_on_to_exec.unlock();
 
+            #ifdef LOG_EVENTS
+                if(processing)
+                    events_logger->info("Finished processing in thread ", thread_id);
+            #endif
+
             sleep_function(sleep_between_operations);
 
             if(stop_when_task_finished)
@@ -169,6 +199,12 @@ void Thread::run()
                 stop_when_task_finished = false;
             }
         }
+
+        #ifdef LOG_EVENTS
+            if(processing)
+                events_logger->info("Finished processing in thread ", thread_id);
+        #endif
+
         sleep_function(sleep_between_instances);
     }
 
@@ -185,6 +221,10 @@ void Thread::add_to_thread(int id, const std::function<void()>& to_exec)
     threads[id].mutex_on_to_exec.lock();
     threads[id].to_exec.push_back(to_exec);
     threads[id].mutex_on_to_exec.unlock();
+
+    #ifdef LOG_EVENTS
+        events_logger->info("Single operation added to thread ", thread_id);
+    #endif
 }
 
 void Thread::add_to_thread_and_exec(int id, const std::function<void()>& to_exec)
@@ -192,6 +232,10 @@ void Thread::add_to_thread_and_exec(int id, const std::function<void()>& to_exec
     threads[id].mutex_on_to_exec.lock();
     threads[id].to_exec.push_back(to_exec);
     threads[id].mutex_on_to_exec.unlock();
+
+    #ifdef LOG_EVENTS
+        events_logger->info("Single operation added to thread ", thread_id, ", immediate execution");
+    #endif
 
     stop_when_task_finished = true;
 
@@ -201,7 +245,7 @@ void Thread::add_to_thread_and_exec(int id, const std::function<void()>& to_exec
         is_running = true;
 }
 
-static const Thread& Thread::get_thread(int id)
+const Thread& Thread::get_thread(int id)
 {
     return threads[id];
 }
