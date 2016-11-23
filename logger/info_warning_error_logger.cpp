@@ -47,3 +47,6 @@ void Info_Warning_Error_Logger::endLine()
     for(std::vector<std::shared_ptr<Handler> >::iterator it = handlers.begin(); it != handlers.end(); it++)
         (*it)->writeEndline("");
 }
+
+std::string Info_Warning_Error_Logger::type()
+{return "common";}

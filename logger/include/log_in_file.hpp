@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define LOG_IN_FILE_HPP
 
 
+#include "info_warning_error_logger_threaded_debug.hpp"
+#include "info_warning_error_logger_threaded.hpp"
 #include "info_warning_error_logger_debug.hpp"
 #include "info_warning_error_logger.hpp"
 #include "file_handler.hpp"
@@ -41,6 +43,7 @@ class Log_In_File
         static std::shared_ptr<Logger_Type> getErrorLog();
 
         static void setFolderPath(const std::string& path);
+        static void close();
 
     private:
         Log_In_File(const std::string& folderPath);
@@ -61,6 +64,8 @@ class Log_In_File
 
 typedef Log_In_File<Info_Warning_Error_Logger> Easy_Log_In_File;
 typedef Log_In_File<Info_Warning_Error_Logger_Debug> Easy_Log_In_File_Debug;
+typedef Log_In_File<Info_Warning_Error_Logger_Threaded> Easy_Log_In_File_Threaded;
+typedef Log_In_File<Info_Warning_Error_Logger_Threaded_Debug> Easy_Log_In_File_Threaded_Debug;
 
 
 template <typename Logger_Type>
@@ -90,15 +95,23 @@ void Log_In_File<Logger_Type>::setFolderPath(const std::string& path)
 }
 
 template <typename Logger_Type>
+void Log_In_File<Logger_Type>::close()
+{
+    instance->infoLog.reset();
+    instance->warningLog.reset();
+    instance->errorLog.reset();
+}
+
+template <typename Logger_Type>
 Log_In_File<Logger_Type>::Log_In_File(const std::string& folderPath) :
     infoLog(std::shared_ptr<Logger_Type>(new Logger_Type())),
     warningLog(std::shared_ptr<Logger_Type>(new Logger_Type())),
     errorLog(std::shared_ptr<Logger_Type>(new Logger_Type()))
 {
     path = folderPath;
-    infoPath = folderPath+Logger::date()+".infoLog";
-    warningPath = folderPath+Logger::date()+".warningLog";
-    errorPath = folderPath+Logger::date()+".errorLog";
+    infoPath = folderPath+Logger::date()+"."+Logger_Type::type()+".infoLog";
+    warningPath = folderPath+Logger::date()+"."+Logger_Type::type()+".warningLog";
+    errorPath = folderPath+Logger::date()+"."+Logger_Type::type()+".errorLog";
     infoLog->addHandler(std::shared_ptr<Handler>(new File_Handler(infoPath)));
     warningLog->addHandler(std::shared_ptr<Handler>(new File_Handler(warningPath)));
     errorLog->addHandler(std::shared_ptr<Handler>(new File_Handler(errorPath)));

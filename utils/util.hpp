@@ -25,6 +25,8 @@ namespace Utils
 
     template <typename T, size_t N>
     std::ostream& write_vec(const std::array<T,N>& to_write, std::ostream& out, char sep = ' ', bool endline = false);
+
+    void terminate_and_close_logs(bool print_in_warnings = true);
 }
 
 template <size_t N, typename U>
@@ -79,6 +81,25 @@ std::ostream& Utils::write_vec(const std::array<T,N>& to_write, std::ostream& ou
     return out;
 }
 
+
+#include <mutex>
+#include "logger/include/log_in_file.hpp"
+
+void Utils::terminate_and_close_logs(bool print_in_warnings)
+{
+    static std::mutex tmp;
+    tmp.lock();
+    if(print_in_warnings)
+        Easy_Log_In_File::getWarningLog()->warning("Terminate thread, closing logs and exiting");
+    Easy_Log_In_File& logger1 = Easy_Log_In_File::getInstance();
+    logger1.close();
+    if(print_in_warnings)
+        Easy_Log_In_File_Debug::getWarningLog()->warning("Terminate thread, closing logs and exiting");
+    Easy_Log_In_File_Debug& logger2 = Easy_Log_In_File_Debug::getInstance();
+    logger2.close();
+    tmp.unlock();
+}
+
 template <typename T>
 std::ostream& operator << (std::ostream& out, const std::vector<T>& to_write)
 {
@@ -90,5 +111,6 @@ std::ostream& operator << (std::ostream& out, const std::array<T,N>& to_write)
 {
     return Utils::write_vec(to_write, out);
 }
+
 
 #endif

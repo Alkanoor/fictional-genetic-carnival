@@ -53,6 +53,8 @@ class Info_Warning_Error_Logger_Debug : public Info_Warning_Error_Logger
         void printDate();
         void endLine();
 
+        static std::string type();
+
         static std::shared_ptr<Info_Warning_Error_Logger_Debug> static_log;
 
     private:

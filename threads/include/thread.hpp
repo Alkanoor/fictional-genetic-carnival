@@ -37,10 +37,8 @@ class Thread
                     , const std::shared_ptr<Info_Warning_Error_Logger>& error_logger = Easy_Log_In_File::getErrorLog()
                 #endif
                );
+        ~Thread();
 
-        Thread(Thread&& t);
-
-        friend void std::swap(Thread& t1, Thread& t2);
 
         bool start();               // launches the first part of the thread, is is_running, does nothing
         void restart();             // waits until the end of current operation but erase all remaining in queue, and restart cleanly
@@ -49,12 +47,13 @@ class Thread
         void stop();                // waits until the end of current operation but erase all remaining in queue, and finish
         void soft_stop();           // waits until the end of all operations in queue, and finish
         void terminate();           // aborts current operations abruptely and quit as soon as it is possible
+        void join();                // soft_close called, then wait for end of thread
 
         void run();                 // main loop in thread
         bool is_started() const;
 
-        void add_to_thread(int id, const std::function<void()>& to_exec);
-        void add_to_thread_and_exec(int id, const std::function<void()>& to_exec);
+        static void add_to_thread(int id, const std::function<void()>& to_exec);
+        static void add_to_thread_and_exec(int id, const std::function<void()>& to_exec);
 
         static const Thread& get_thread(int id);
         #ifdef ADD_TO_DEFAULT_POOL
@@ -72,7 +71,10 @@ class Thread
         bool is_running;
         bool is_stopped;
         bool terminated;
+        bool is_finished;
+        bool dont_stop;
         bool stop_when_task_finished;
+        std::mutex mutex_on_finished;
 
         double sleep_between_instances;
         double sleep_between_operations;
@@ -87,8 +89,11 @@ class Thread
         #ifdef LOG_EXCEPTIONS
             std::shared_ptr<Info_Warning_Error_Logger> error_logger;
         #endif
+        #ifdef LOG_DEBUG
+            static Easy_Log_In_File_Threaded_Debug debug_logger;
+        #endif
 
-        static std::map<int, Thread&> threads;
+        static std::map<int, Thread*> threads;
         #ifdef ADD_TO_DEFAULT_POOL
             static Thread_Pool default_pool;
         #endif

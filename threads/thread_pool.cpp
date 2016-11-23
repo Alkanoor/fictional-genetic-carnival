@@ -1,4 +1,7 @@
-#include "thread_pool.hpp"
+#include <cassert>
+#include <algorithm>
+
+#include "include/thread_pool.hpp"
 
 
 Thread_Pool::Thread_Pool(const std::vector<int>& id_threads) :
@@ -15,7 +18,7 @@ void Thread_Pool::append(int id)
 
 void Thread_Pool::erase(int id)
 {
-    id_threads.erase(id_threads.find(id));
+    id_threads.erase(std::find(id_threads.begin(), id_threads.end(), id));
 }
 
 void Thread_Pool::add_to_thread(int id_in_pool, const std::function<void()>& to_exec)
