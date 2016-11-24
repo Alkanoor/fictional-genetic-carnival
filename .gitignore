@@ -8,3 +8,4 @@ test
 *.warningLog*
 callgrind*
 obj
+bin
