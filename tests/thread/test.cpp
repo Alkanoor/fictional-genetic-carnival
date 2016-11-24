@@ -24,7 +24,7 @@ int reference_block() //about 50ms execution time on current machine
 
 void multiple_reference_blocks(int offset)
 {
-    for(int i=0;i<200;i+=offset)
+    for(int i=0;i<100;i+=offset)
         reference_block();
 }
 
@@ -52,7 +52,8 @@ int main()
     {
         auto start = std::chrono::system_clock::now();
         for(int j=0;j<i;j++)
-            Thread::add_to_thread_and_exec(j, std::bind(&multiple_reference_blocks,i));
+            for(int k=0;k<2;k++)
+                Thread::add_to_thread_and_exec(j, std::bind(&multiple_reference_blocks,i));
 
         for(auto t : threads)
             t->join();
