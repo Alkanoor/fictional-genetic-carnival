@@ -33,6 +33,12 @@ void Thread_Pool::add_to_thread_and_exec(int id_in_pool, const std::function<voi
     Thread::add_to_thread_and_exec(id_threads[id_in_pool], to_exec);
 }
 
+void Thread_Pool::wait_for(int id_in_pool)
+{
+    assert(id_in_pool<(int)id_threads.size());
+    Thread::join(id_in_pool);
+}
+
 const Thread& Thread_Pool::get_thread(int id_in_pool)
 {
     assert(id_in_pool<(int)id_threads.size());

@@ -441,6 +441,11 @@ const Thread& Thread::get_thread(int id)
     return *threads[id];
 }
 
+void Thread::join(int id)
+{
+    threads[id]->join();
+}
+
 #ifdef ADD_TO_DEFAULT_POOL
     const Thread_Pool& Thread::get_default_pool()
     {

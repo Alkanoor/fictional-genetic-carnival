@@ -21,6 +21,7 @@ class Thread_Pool
 
         void add_to_thread(int id_in_pool, const std::function<void()>& to_exec);
         void add_to_thread_and_exec(int id_in_pool, const std::function<void()>& to_exec);
+        void wait_for(int id_in_pool);
 
         const Thread& get_thread(int id_in_pool);
 

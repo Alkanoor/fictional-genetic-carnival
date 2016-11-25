@@ -57,6 +57,7 @@ class Thread
         static void add_to_thread_and_exec(int id, const std::function<void()>& to_exec);
 
         static const Thread& get_thread(int id);
+        static void join(int id);
         #ifdef ADD_TO_DEFAULT_POOL
             static const Thread_Pool& get_default_pool();
         #endif
