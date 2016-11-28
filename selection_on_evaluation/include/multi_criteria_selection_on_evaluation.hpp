@@ -95,6 +95,9 @@ const std::vector<std::array<int, Population_size> >& Multi_Criteria_Selection_O
             Easy_Log_In_File_Threaded_Debug::getInstance().getInfoLog()->write("Using main thread to treat operation ", i);
         #endif
         current_selected[i] = selections_on_evaluations[i]->eval_select(bits, genes);
+        #ifdef MULTI_CRITERIA_SELECTION_THREAD_DEBUG
+            Easy_Log_In_File_Threaded_Debug::getInstance().getInfoLog()->write("Task ", i, " achieved from main thread");
+        #endif
     }
 
     for(int i=1; i<n_threads; i++)
