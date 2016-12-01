@@ -10,19 +10,13 @@ Info_Warning_Error_Logger::Info_Warning_Error_Logger(bool date, int type) :
 {}
 
 void Info_Warning_Error_Logger::setDateAuto(bool date)
-{
-    printDateAuto = date;
-}
+{printDateAuto = date;}
 
 void Info_Warning_Error_Logger::setEndlineAuto(bool endline)
-{
-    endLineAuto = endline;
-}
+{endLineAuto = endline;}
 
 void Info_Warning_Error_Logger::setType(int type)
-{
-    currentType = type;
-}
+{currentType = type;}
 
 void Info_Warning_Error_Logger::setType(const std::string& type)
 {

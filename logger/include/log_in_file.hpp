@@ -36,7 +36,7 @@ template <typename Logger_Type>
 class Log_In_File
 {
     public:
-        static Log_In_File& getInstance();
+        static Log_In_File<Logger_Type>& getInstance();
 
         static std::shared_ptr<Logger_Type> getInfoLog();
         static std::shared_ptr<Logger_Type> getWarningLog();

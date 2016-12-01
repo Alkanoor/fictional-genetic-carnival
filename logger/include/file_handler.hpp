@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #ifndef FILEHANDLER_HPP
 #define FILEHANDLER_HPP
 
- 
+
 #include <fstream>
 #include <cstdio>
 
@@ -43,7 +43,7 @@ class File_Handler : public Handler
 
     private:
         std::ofstream file;
-	std::string path;
+        std::string path;
 };
 
 

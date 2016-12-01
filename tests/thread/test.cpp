@@ -64,16 +64,17 @@ int main()
         durations.push_back((end-start).count()/1000);
     }
 
-    int previous_slope = 0, best_n_threads = 0;
+    int best_n_threads = 0;
     for(int i=1; i<(int)durations.size(); i++)
     {
+        //durations[i-1] = n/(n-1)*durations[i] (ideal)
+        //durations[i-1]-durations[i] = 1/(n-1)*durations[i]
         int slope = durations[i-1]-durations[i];
-        if(slope*3 <= previous_slope || slope < 0)
+        if(slope*i*1.5 <= durations[i] || slope < 0)
         {
             best_n_threads = i-1;
             break;
         }
-        previous_slope = slope;
     }
 
     std::cout<<"Best number threads (including main) found : "<<(best_n_threads+2)<<std::endl;
