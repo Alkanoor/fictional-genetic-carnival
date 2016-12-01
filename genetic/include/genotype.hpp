@@ -10,9 +10,9 @@
 #include "selection/include/selection.hpp"
 
 
-///***********************************************************************************
-/// Class that provides genotype model : association of bit range and interpretation
-///***********************************************************************************
+///***********************************************************
+/// Class that provides genotype model : array of genes
+///***********************************************************
 
 class Genotype
 {
@@ -20,7 +20,6 @@ class Genotype
         Genotype();
 
         // T is either int or float
-        // interpretation could be anything : Gray code, binary conversion, ...
         template <typename T>
         void add_gene(const Gene<T>& g);
 
@@ -28,8 +27,16 @@ class Genotype
 
         const std::vector<int>& get_integer_interpreted() const;
         const std::vector<float>& get_float_interpreted() const;
+        const std::vector<char>& get_current_gene() const;
+
+        // T is either int or float
+        template <typename T>
+        const Gene<T>& get_gene(int id) const;
 
     private:
+        std::vector<int> integer_interpreted;
+        std::vector<float> float_interpreted;
+
         std::vector<Gene<int> > integer_genes;
         std::vector<Gene<float> > float_genes;
         std::vector<char> current_gene;
@@ -37,18 +44,31 @@ class Genotype
 
 
 template <>
-void add_gene<float>(const std::string& name, int min_location_on_adn, int max_location_on_adn, const std::function<float(const std::vector<char>&, int, int)>& interpretation)
+void add_gene(const Gene<float>& g)
 {
-    assert(min_location_on_adn >= 0 && max_location_on_adn > min_location_on_adn);
-
-    names_float_interpreted.push_back(name);
+    float_genes.push_back(g);
     float_interpreted.push_back(0);
-    min_location_float_genes.push_back(min_location_on_adn);
-    max_location_float_genes.push_back(max_location_on_adn);
-    float_interpretations.push_back(interpretation);
+}
 
-    if(max_location_on_adn > max_location)
-        max_location = max_location_on_adn;
+template <>
+void add_gene(const Gene<int>& g)
+{
+    integer_genes.push_back(g);
+    integer_interpreted.push_back(0);
+}
+
+template <>
+const Gene<int>& get_gene(int id) const
+{
+    assert(id < (int)integer_genes.size());
+    return integer_genes[id];
+}
+
+template <>
+const Gene<float>& get_gene(int id) const
+{
+    assert(id < (int)float_genes.size());
+    return float_genes[id];
 }
 
 

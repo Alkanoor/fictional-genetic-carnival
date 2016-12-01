@@ -5,6 +5,10 @@
 #include "common_interpretations.hpp"
 
 
+///*****************************************************************************************
+/// Class that provides gene model : association of name, bit range and interpretation
+///*****************************************************************************************
+
 template <typename T>
 class Gene
 {

@@ -22,3 +22,6 @@ const std::vector<int>& Genotype::get_integer_interpreted() const
 
 const std::vector<float>& Genotype::get_float_interpreted() const
 {return float_interpreted;}
+
+const std::vector<char>& Genotype::get_current_gene() const
+{return current_gene;}

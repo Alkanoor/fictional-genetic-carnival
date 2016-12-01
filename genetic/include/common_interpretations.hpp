@@ -1,9 +1,13 @@
-#ifndef COMMON_INTERPRETATION_HPP
-#define COMMON_INTERPRETATION_HPP
+#ifndef COMMON_INTERPRETATIONS_HPP
+#define COMMON_INTERPRETATIONS_HPP
 
 
-#include <bitset>
+#include "basic_interpretations.hpp"
 
+
+///**********************************************************************************
+/// Class (to keep encapsulation) that provides a pool of interpretation functions
+///**********************************************************************************
 
 class Common_Interpretations
 {
@@ -25,22 +29,31 @@ class Common_Interpretations
 
 
 template <>
-const std::function<int(const std::vector<char>&, int, int)>& Common_Interpretations<N>::get_interpretation(const std::string& name)
-{return integer_interpretations[name];}
+void Common_Interpretations::add_interpretation(const std::string& name, const std::function<int(const std::vector<char>&, int, int)>& func)
+{
+    integer_interpretations[name] = func;
+}
 
 template <>
-const std::function<float(const std::vector<char>&, int, int)>& Common_Interpretations<N>::get_interpretation(const std::string& name)
-{return float_interpretations[name];}
-
-template <size_t N>
-void Common_Interpretations<N>::init()
+void Common_Interpretations::add_interpretation(const std::string& name, const std::function<float(const std::vector<char>&, int, int)>& func)
 {
-    initialized = true;
+    float_interpretations[name] = func;
+}
 
-    integer_interpretations["BINARY"] = std::bind(&Common_Interpretations<N>::binary_interpretation, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    integer_interpretations["GRAY"] = std::bind(&Common_Interpretations<N>::gray_interpretation, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+template <>
+const std::function<int(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
+{
+    if(!initialized)
+        init();
+    return integer_interpretations[name];
+}
 
-    float_interpretations["EXPONENTIAL"] = std::bind(&Common_Interpretations<N>::log_interpretation, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+template <>
+const std::function<float(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
+{
+    if(!initialized)
+        init();
+    return float_interpretations[name];
 }
 
 
