@@ -17,26 +17,26 @@ int long_computation(int a)
 
 int reference_block() //about 50ms execution time on current machine
 {
-    for(int j=0;j<1000/45*50.5;j++)
+    for(int j=0; j<1000/45*50.5; j++)
         long_computation(100);
     return 0;
 }
 
 void multiple_reference_blocks(int offset)
 {
-    for(int i=0;i<100;i+=offset)
+    for(int i=0; i<100; i+=offset)
         reference_block();
 }
 
-// g++ -std=c++11 -I../../include/utils -I../.. test.cpp -o test -L../../logger/bin -llog ../../threads/thread.cpp ../../threads/thread_pool.cpp -lpthread
+// g++ -std=c++11 -I../../include/utils -I../.. test.cpp -o test -L../../logger/bin -llog ../../threads/thread.cpp ../../threads/thread_pool.cpp -lpthread -Wall -Werror
 int main()
 {
-    for(int i=0;i<5;i++)
+    for(int i=0; i<5; i++)
     {
         auto start = std::chrono::system_clock::now();
         reference_block();
         auto end = std::chrono::system_clock::now();
-        std::cout<<(end-start).count()/1000<<std::endl;
+        std::cout<<"Testing reference duration : "<<(end-start).count()/1000<<" microseconds"<<std::endl;
     }
 
     //std::vector<Thread> t(1); // doesn't work because default contructor is private : an id must be provided
@@ -48,18 +48,35 @@ int main()
     for(int j=0;j<10;j++)
         threads.push_back(std::shared_ptr<Thread>(new Thread(j)));
 
-    for(int i=1;i<10;i++)
+    std::vector<int> durations;
+    for(int i=1; i<10; i++)
     {
         auto start = std::chrono::system_clock::now();
-        for(int j=0;j<i;j++)
-            for(int k=0;k<2;k++)
+        for(int j=0; j<i; j++)
+            for(int k=0; k<2; k++)
                 Thread::add_to_thread_and_exec(j, std::bind(&multiple_reference_blocks,i));
 
         for(auto t : threads)
             t->join();
 
         auto end = std::chrono::system_clock::now();
-        std::cout<<"With "<<i<<" threads : "<<(end-start).count()/1000<<std::endl;
-        //exit(0);
+        std::cout<<"With "<<i<<" threads : "<<(end-start).count()/1000<<" microseconds"<<std::endl;
+        durations.push_back((end-start).count()/1000);
     }
+
+    int previous_slope = 0, best_n_threads = 0;
+    for(int i=1; i<(int)durations.size(); i++)
+    {
+        int slope = durations[i-1]-durations[i];
+        if(slope*3 <= previous_slope || slope < 0)
+        {
+            best_n_threads = i-1;
+            break;
+        }
+        previous_slope = slope;
+    }
+
+    std::cout<<"Best number threads (including main) found : "<<(best_n_threads+2)<<std::endl;
+
+    return 0;
 }

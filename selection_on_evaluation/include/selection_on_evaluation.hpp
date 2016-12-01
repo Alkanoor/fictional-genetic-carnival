@@ -15,7 +15,7 @@ template <size_t Population_size, typename T>
 class Simple_Selection_On_Evaluation
 {
     public:
-        virtual const T& eval_select(const std::vector<char>&, const Genotype&) throw() const = 0;
+        virtual const T& eval_select(const std::array<std::vector<char>, Population_size>&, const Genotype&) throw() const = 0;
 };
 
 

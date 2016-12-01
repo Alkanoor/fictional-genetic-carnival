@@ -41,7 +41,7 @@ void Common_Interpretations::add_interpretation(const std::string& name, const s
 }
 
 template <>
-const std::function<int(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
+const std::function<int>(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
 {
     if(!initialized)
         init();
@@ -49,7 +49,7 @@ const std::function<int(const std::vector<char>&, int, int)>& Common_Interpretat
 }
 
 template <>
-const std::function<float(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
+const std::function<float>(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
 {
     if(!initialized)
         init();
