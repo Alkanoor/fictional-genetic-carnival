@@ -10,8 +10,8 @@ template <typename S, typename T>
 class Vector_To_String_Force_Type
 {
     public:
-        Vector_To_String(T v, const std::string& separator=", ", const std::string& begin="[", const std::string& end="]");
-        Vector_To_String(const T* v, const std::string& separator=", ", const std::string& begin="[", const std::string& end="]");
+        Vector_To_String_Force_Type(T v, const std::string& separator=", ", const std::string& begin="[", const std::string& end="]");
+        Vector_To_String_Force_Type(const T* v, const std::string& separator=", ", const std::string& begin="[", const std::string& end="]");
 
         const std::string& toString() const;
 
@@ -21,7 +21,7 @@ class Vector_To_String_Force_Type
 
 
 template <typename S, typename T>
-Vector_To_String<S,T>::Vector_To_String(T v, const std::string& separator, const std::string& begin, const std::string& end)
+Vector_To_String_Force_Type<S,T>::Vector_To_String_Force_Type(T v, const std::string& separator, const std::string& begin, const std::string& end)
 {
     int l = (int)v.size();
     represented += begin;
@@ -37,7 +37,7 @@ Vector_To_String<S,T>::Vector_To_String(T v, const std::string& separator, const
 }
 
 template <typename S, typename T>
-Vector_To_String<S,T>::Vector_To_String(const T* v, const std::string& separator, const std::string& begin, const std::string& end)
+Vector_To_String_Force_Type<S,T>::Vector_To_String_Force_Type(const T* v, const std::string& separator, const std::string& begin, const std::string& end)
 {
     int l = (int)v->size();
     represented += begin;
@@ -53,7 +53,7 @@ Vector_To_String<S,T>::Vector_To_String(const T* v, const std::string& separator
 }
 
 template <typename S, typename T>
-const std::string& Vector_To_String<S,T>::toString() const
+const std::string& Vector_To_String_Force_Type<S,T>::toString() const
 {return represented;}
 
 

@@ -12,7 +12,7 @@ namespace Interpretation
     template <typename T = char, typename U = int>
     static U binary_interpretation(const std::vector<T>&, int, int);
     template <typename T = char, typename U = float, typename V = int>
-    static float normed_binary_interpretation(const std::vector<T>&, int, int);
+    static U normed_binary_interpretation(const std::vector<T>&, int, int);
 }
 
 
@@ -44,12 +44,13 @@ namespace Interpretation
             for(int i=0; i<max-min; i++)
             {
                 impl::normalization_factors<U>[max-min] *= 2;
-                assert(impl::normalization_factors<U>[max-min]-1>0);
+                assert(impl::normalization_factors<U>[max-min]>1);
             }
-            impl::normalization_factors<U>[max-min]--;
+            if(max-min > 0)
+                impl::normalization_factors<U>[max-min]--;
         }
-        else
-            return (U)binary_interpretation<T, V>(adn, min, max)/impl::normalization_factors<U>[max-min];
+        
+        return (U)binary_interpretation<T, V>(adn, min, max)/impl::normalization_factors<U>[max-min];
     }
 }
 

@@ -28,9 +28,9 @@ void multiple_reference_blocks(int offset)
         reference_block();
 }
 
-// g++ -std=c++11 -I../../include/utils -I../.. test.cpp -o test -L../../logger/bin -llog ../../threads/thread.cpp ../../threads/thread_pool.cpp -lpthread -Wall -Werror
+// g++ -std=c++11 -I../.. test.cpp -o test -L../../logger/bin -llog ../../threads/thread.cpp ../../threads/thread_pool.cpp -lpthread -Wall -Werror
 // if it doesn't work because of -llog, test with :
-// g++ -std=c++11 -I../../include/utils -I../.. test.cpp -o test ../../threads/thread.cpp ../../threads/thread_pool.cpp $(echo $(ls ../../logger/*.cpp)) -lpthread -Wall -Werror
+// g++ -std=c++11 -I../.. test.cpp -o test ../../threads/thread.cpp ../../threads/thread_pool.cpp $(echo $(ls ../../logger/*.cpp)) -lpthread -Wall -Werror
 int main()
 {
     for(int i=0; i<5; i++)

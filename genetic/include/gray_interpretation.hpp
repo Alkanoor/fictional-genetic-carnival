@@ -9,9 +9,9 @@
 namespace Interpretation
 {
     template <typename T = char, typename U = int>
-    static int gray_interpretation(const std::vector<T>&, int, int);
+    static U gray_interpretation(const std::vector<T>&, int, int);
     template <typename T, typename U = float, typename V = int>
-    static float normed_gray_interpretation(const std::vector<T>&, int, int);
+    static U normed_gray_interpretation(const std::vector<T>&, int, int);
 }
 
 
@@ -21,30 +21,13 @@ U Interpretation::gray_interpretation(const std::vector<T>& adn, int min, int ma
     return 0;
 }
 
-namespace Interpretation
+template <typename T, typename U, typename V>
+U Interpretation::normed_gray_interpretation(const std::vector<T>& adn, int min, int max)
 {
-    namespace impl
-    {
-        template <typename U>
-        std::map<int, U> normalization_factors;
-    }
+    if(!impl::normalization_factors<U>.count(max-min))
+        normed_binary_interpretation(adn, min, max);
 
-    template <typename T, typename U, typename V>
-    U normed_gray_interpretation(const std::vector<T>& adn, int min, int max)
-    {
-        if(!impl::normalization_factors<U>.count(max-min))
-        {
-            impl::normalization_factors<U>[max-min] = 1;
-            for(int i=0; i<max-min; i++)
-            {
-                impl::normalization_factors<U>[max-min] *= 2;
-                assert(impl::normalization_factors<U>[max-min]-1>0);
-            }
-            impl::normalization_factors<U>[max-min]--;
-        }
-        else
-            return (U)gray_interpretation<T, V>(adn, min, max)/impl::normalization_factors<U>[max-min];
-    }
+    return (U)gray_interpretation<T, V>(adn, min, max)/impl::normalization_factors<U>[max-min];
 }
 
 

@@ -2,7 +2,9 @@
 #define COMMON_INTERPRETATIONS_HPP
 
 
-#include "basic_interpretations.hpp"
+#include <functional>
+#include <vector>
+#include <map>
 
 
 ///**********************************************************************************
@@ -26,35 +28,6 @@ class Common_Interpretations
 
         static bool initialized;
 };
-
-
-template <>
-void Common_Interpretations::add_interpretation(const std::string& name, const std::function<int(const std::vector<char>&, int, int)>& func)
-{
-    integer_interpretations[name] = func;
-}
-
-template <>
-void Common_Interpretations::add_interpretation(const std::string& name, const std::function<float(const std::vector<char>&, int, int)>& func)
-{
-    float_interpretations[name] = func;
-}
-
-template <>
-const std::function<int>(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
-{
-    if(!initialized)
-        init();
-    return integer_interpretations[name];
-}
-
-template <>
-const std::function<float>(const std::vector<char>&, int, int)>& Common_Interpretations::get_interpretation(const std::string& name)
-{
-    if(!initialized)
-        init();
-    return float_interpretations[name];
-}
 
 
 #endif

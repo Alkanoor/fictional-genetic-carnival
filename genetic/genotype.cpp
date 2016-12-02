@@ -1,20 +1,26 @@
 #include "include/genotype.hpp"
 
 
-Genotype::Genotype() :
-    max_location(0)
-{}
+void Genotype::add_gene(const Gene<float>& g)
+{
+    float_genes.push_back(g);
+    float_interpreted.push_back(0);
+}
+
+void Genotype::add_gene(const Gene<int>& g)
+{
+    integer_genes.push_back(g);
+    integer_interpreted.push_back(0);
+}
 
 void Genotype::interprete(const std::vector<char>& adn)
 {
     current_gene = adn;
-    if((int)adn.size() < max_location)
-        throw std::runtime_error("Error: impossible interpretation: not enough bits on adn");
 
-    for(int i=0; i<(int)integer_interpretations.size(); i++)
-        integer_interpreted[i] = integer_interpretations[i](adn, min_location_integer_genes[i], max_location_integer_genes[i]);
-    for(int i=0; i<(int)float_interpretations.size(); i++)
-        float_interpreted[i] = float_interpretations[i](adn, min_location_float_genes[i], max_location_float_genes[i]);
+    for(int i=0; i<(int)integer_genes.size(); i++)
+        integer_interpreted[i] = integer_genes[i].interprete(adn);
+    for(int i=0; i<(int)float_genes.size(); i++)
+        float_interpreted[i] = float_genes[i].interprete(adn);
 }
 
 const std::vector<int>& Genotype::get_integer_interpreted() const
@@ -25,3 +31,15 @@ const std::vector<float>& Genotype::get_float_interpreted() const
 
 const std::vector<char>& Genotype::get_current_gene() const
 {return current_gene;}
+
+const Gene<int>& Genotype::get_gene_int(int id) const
+{
+    assert(id < (int)integer_genes.size());
+    return integer_genes[id];
+}
+
+const Gene<float>& Genotype::get_gene_float(int id) const
+{
+    assert(id < (int)float_genes.size());
+    return float_genes[id];
+}

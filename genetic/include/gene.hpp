@@ -2,6 +2,8 @@
 #define GENE_HPP
 
 
+#include <cassert>
+
 #include "common_interpretations.hpp"
 
 
@@ -33,11 +35,11 @@ class Gene
 
 
 template <typename T>
-Gene<T>::Gene(const std::string& name, int min_adn_location, int max_adn_location, const std::string& interpretation_type="BINARY") :
+Gene<T>::Gene(const std::string& name, int min_adn_location, int max_adn_location, const std::string& interpretation_type) :
     name(name),
     min_adn_location(min_adn_location),
     max_adn_location(max_adn_location),
-    interpret_function(Common_Interpretations::get_interpretation(interpretation_type))
+    interpret_function(Common_Interpretations::get_interpretation<T>(interpretation_type))
 {
     assert(min_adn_location >= 0 && max_adn_location > min_adn_location);
 }
@@ -60,6 +62,8 @@ T Gene<T>::interprete(const std::vector<char>& adn)
         throw std::runtime_error("Error: impossible interpretation: not enough bits on adn");
 
     current_interpretation = interpret_function(adn, min_adn_location, max_adn_location);
+
+    return current_interpretation;
 }
 
 template <typename T>

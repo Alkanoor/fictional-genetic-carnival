@@ -2,6 +2,7 @@
 #define SELECTION_HPP
 
 
+#include <cassert>
 #include <array>
 
 

@@ -14,7 +14,7 @@ float predicate(int i, int N)
     return exp(3.6*(float)(N-i)/(float)N);
 }
 
-//g++ -std=c++11 -I../../include/utils -I../.. test.cpp -o test -L../../logger/bin -llog
+//g++ -std=c++11 -I../.. test.cpp -o test -L../../logger/bin -llog
 
 int main(int argc, char* argv[])
 {
