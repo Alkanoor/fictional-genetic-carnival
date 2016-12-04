@@ -4,8 +4,8 @@
 
 //#define ELIT_SELECTION_DEBUG
 
-#include <memory>
 #include <cassert>
+#include <memory>
 
 #include "rank_selection.hpp"
 

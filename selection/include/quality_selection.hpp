@@ -4,14 +4,14 @@
 
 //#define QUALITY_SELECTION_DEBUG
 
+#include <stdexcept>
 #include <chrono>
 #include <random>
-#include <stdexcept>
 
-#include "selection.hpp"
-#include "utils/util.hpp"
-#include "utils/vector_to_string.hpp"
 #include "logger/include/log_in_file.hpp"
+#include "utils/vector_to_string.hpp"
+#include "utils/util.hpp"
+#include "selection.hpp"
 
 
 ///*********************************************************************************

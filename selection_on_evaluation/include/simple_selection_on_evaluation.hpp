@@ -5,9 +5,9 @@
 #define SIMPLE_SELECTION_THREAD_DEBUG
 
 
-#include <memory>
-#include <stdexcept>
 #include <functional>
+#include <stdexcept>
+#include <memory>
 
 #include "selection/include/selection.hpp"
 

@@ -4,9 +4,9 @@
 
 //#define RANK_SELECTION_DEBUG
 
-#include "selection.hpp"
-#include "utils/util.hpp"
 #include "quality_selection.hpp"
+#include "utils/util.hpp"
+#include "selection.hpp"
 
 
 ///*********************************************************************************

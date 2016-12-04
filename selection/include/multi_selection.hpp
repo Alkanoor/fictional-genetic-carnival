@@ -4,10 +4,10 @@
 
 //#define MULTI_SELECTION_DEBUG
 
+#include <stdexcept>
 #include <chrono>
 #include <memory>
 #include <random>
-#include <stdexcept>
 
 #include "selection.hpp"
 

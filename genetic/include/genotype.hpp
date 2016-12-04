@@ -29,6 +29,8 @@ class Genotype
 
         const Gene<int>& get_gene_int(int id) const;
         const Gene<float>& get_gene_float(int id) const;
+        const Gene<int>& get_gene_int(const std::string& s) const;
+        const Gene<float>& get_gene_float(const std::string& s) const;
 
     private:
         std::vector<int> integer_interpreted;

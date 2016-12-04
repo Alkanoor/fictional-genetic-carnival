@@ -1,5 +1,7 @@
 #include "include/genotype.hpp"
 
+#include <stdexcept>
+
 
 void Genotype::add_gene(const Gene<float>& g)
 {
@@ -42,4 +44,20 @@ const Gene<float>& Genotype::get_gene_float(int id) const
 {
     assert(id < (int)float_genes.size());
     return float_genes[id];
+}
+
+const Gene<int>& Genotype::get_gene_int(const std::string& s) const
+{
+    for(auto g : integer_genes)
+        if(g.get_name() == s)
+            return g;
+    throw std::runtime_error("Error: no gene with id "+s);
+}
+
+const Gene<float>& Genotype::get_gene_float(const std::string& s) const
+{
+    for(auto g : float_genes)
+        if(g.get_name() == s)
+            return g;
+    throw std::runtime_error("Error: no gene with id "+s);
 }

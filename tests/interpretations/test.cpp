@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "utils/util.hpp"
-#include "utils/vector_to_string_force_type.hpp"
 #include "genetic/include/common_interpretations.hpp"
+#include "utils/vector_to_string_force_type.hpp"
+#include "utils/util.hpp"
 
 
 // g++ -std=c++14 -I../.. test.cpp $(echo $(ls ../../genetic/*.cpp)) $(echo $(ls ../../logger/*.cpp)) -o test -Wall -Werror
@@ -36,6 +36,7 @@ int main()
     std::cout<<g(bits, 0, 8)<<std::endl;
     std::cout<<g(bits, 8, 14)<<std::endl;
     std::cout<<g(bits, 14, 14+8)<<std::endl;
+    std::cout<<g(bits, 15, 15+8)<<std::endl;
     std::cout<<g(bits, 22, 22+8)<<std::endl;
 
     std::cout<<"Gray on string "<<Vector_To_String_Force_Type<int, std::vector<char> >(&bits).toString()<<" (len "<<bits.size()<<")"<<std::endl;
