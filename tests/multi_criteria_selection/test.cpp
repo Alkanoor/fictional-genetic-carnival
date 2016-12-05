@@ -90,7 +90,9 @@ int main()
 
     //comment next lines to see performance changes
     Thread t1(1);
-    //Thread t2(2);
+    Thread t2(2);
+    //On telecom machine : 1.3 s to perform with 1 thread, 1 s to perform with 2, and 0.72 with 3
+    //On my machine : increasing number of threads decreases performance (a bit, but it should at least be the contrary)
 
     auto start = std::chrono::system_clock::now();
     std::vector<std::array<int, POPULATION_SIZE> > final_result = multi_criteria_selection.eval_select(bits, g);
