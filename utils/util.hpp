@@ -53,7 +53,7 @@ void Utils::index_after_sorting(const std::array<T, N>& qualities, int begin_at,
     begin += begin_at;
     std::iota(begin, sorted.end(), 0);
     std::sort(begin, sorted.end(), [&](int a, int b) {return qualities[a+begin_at] > qualities[b+begin_at];});
-    for(int i=begin_at; i<N; i++)
+    for(int i=begin_at; i<(int)N; i++)
         sorted_reversed[sorted[i]] = i;
 }
 
@@ -81,24 +81,6 @@ std::ostream& Utils::write_vec(const std::array<T,N>& to_write, std::ostream& ou
     return out;
 }
 
-
-#include <mutex>
-#include "logger/include/log_in_file.hpp"
-
-void Utils::terminate_and_close_logs(bool print_in_warnings)
-{
-    static std::mutex tmp;
-    tmp.lock();
-    if(print_in_warnings)
-        Easy_Log_In_File::getWarningLog()->warning("Terminate thread, closing logs and exiting");
-    Easy_Log_In_File& logger1 = Easy_Log_In_File::getInstance();
-    logger1.close();
-    if(print_in_warnings)
-        Easy_Log_In_File_Debug::getWarningLog()->warning("Terminate thread, closing logs and exiting");
-    Easy_Log_In_File_Debug& logger2 = Easy_Log_In_File_Debug::getInstance();
-    logger2.close();
-    tmp.unlock();
-}
 
 template <typename T>
 std::ostream& operator << (std::ostream& out, const std::vector<T>& to_write)

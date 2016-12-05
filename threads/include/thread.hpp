@@ -60,6 +60,7 @@ class Thread
         static void join(int id);
         #ifdef ADD_TO_DEFAULT_POOL
             static const Thread_Pool& get_default_pool();
+            static Thread_Pool& get_and_modify_default_pool();
         #endif
 
     private:

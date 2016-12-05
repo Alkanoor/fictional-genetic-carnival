@@ -19,9 +19,9 @@ class Thread_Pool
         void append(int id);
         void erase(int id);
 
-        void add_to_thread(int id_in_pool, const std::function<void()>& to_exec);
-        void add_to_thread_and_exec(int id_in_pool, const std::function<void()>& to_exec);
-        void wait_for(int id_in_pool);
+        void add_to_thread(int id_in_pool, const std::function<void()>& to_exec) const;
+        void add_to_thread_and_exec(int id_in_pool, const std::function<void()>& to_exec) const;
+        void wait_for(int id_in_pool) const;
 
         const Thread& get_thread(int id_in_pool);
 

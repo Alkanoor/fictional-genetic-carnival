@@ -451,6 +451,11 @@ void Thread::join(int id)
     {
         return default_pool;
     }
+
+    Thread_Pool& Thread::get_and_modify_default_pool()
+    {
+        return default_pool;
+    }
 #endif
 
 

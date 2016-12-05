@@ -3,6 +3,10 @@
 #include <stdexcept>
 
 
+Genotype::Genotype(bool save_current_adn) :
+    save_current_adn(save_current_adn)
+{}
+
 void Genotype::add_gene(const Gene<float>& g)
 {
     float_genes.push_back(g);
@@ -17,7 +21,8 @@ void Genotype::add_gene(const Gene<int>& g)
 
 void Genotype::interprete(const std::vector<char>& adn)
 {
-    current_gene = adn;
+    if(save_current_adn)
+        current_gene = adn;
 
     for(int i=0; i<(int)integer_genes.size(); i++)
         integer_interpreted[i] = integer_genes[i].interprete(adn);
@@ -48,7 +53,7 @@ const Gene<float>& Genotype::get_gene_float(int id) const
 
 const Gene<int>& Genotype::get_gene_int(const std::string& s) const
 {
-    for(auto g : integer_genes)
+    for(const Gene<int>& g : integer_genes)
         if(g.get_name() == s)
             return g;
     throw std::runtime_error("Error: no gene with id "+s);
@@ -56,7 +61,7 @@ const Gene<int>& Genotype::get_gene_int(const std::string& s) const
 
 const Gene<float>& Genotype::get_gene_float(const std::string& s) const
 {
-    for(auto g : float_genes)
+    for(const Gene<float>& g : float_genes)
         if(g.get_name() == s)
             return g;
     throw std::runtime_error("Error: no gene with id "+s);

@@ -18,6 +18,8 @@
 class Genotype
 {
     public:
+        Genotype(bool save_current_adn = false);
+
         void add_gene(const Gene<int>& g);
         void add_gene(const Gene<float>& g);
 
@@ -33,6 +35,8 @@ class Genotype
         const Gene<float>& get_gene_float(const std::string& s) const;
 
     private:
+        bool save_current_adn;
+        
         std::vector<int> integer_interpreted;
         std::vector<float> float_interpreted;
 

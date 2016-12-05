@@ -55,7 +55,7 @@ template <size_t N, typename T, size_t N_threads>
 Selection<N,T,N_threads>::Selection(int id) :
     thread_id(id)
 {
-    assert(thread_id<N_threads);
+    assert(thread_id<(int)N_threads);
 }
 
 
