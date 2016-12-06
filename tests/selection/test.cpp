@@ -15,7 +15,6 @@ float predicate(int i, int N)
 }
 
 //g++ -std=c++11 -I../.. test.cpp -o test -L../../logger/bin -llog
-
 int main(int argc, char* argv[])
 {
     if(argc<2)

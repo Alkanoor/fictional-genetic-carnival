@@ -26,11 +26,14 @@ class Simple_Selection_On_Evaluation : public Selection_On_Evaluation<Population
 
         void set_evaluation_selection(const std::function<T(const std::vector<char>&, Genotype&)>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select);
 
+        const std::array<T, Population_size>& eval(const std::array<std::vector<char>, Population_size>&, Genotype&) throw();
         const std::array<int, Population_size>& eval_select(const std::array<std::vector<char>, Population_size>&, Genotype&) throw();
 
     private:
         std::function<T(const std::vector<char>&, Genotype&)> evaluation;
         std::shared_ptr<Selection<Population_size,T,N_threads> > selection;
+
+        std::array<T, Population_size> qualities;
 };
 
 
@@ -48,7 +51,7 @@ void Simple_Selection_On_Evaluation<Population_size, T, N_threads>::set_evaluati
 }
 
 template <size_t Population_size, typename T, size_t N_threads>
-const std::array<int, Population_size>& Simple_Selection_On_Evaluation<Population_size, T, N_threads>::eval_select(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw()
+const std::array<T, Population_size>& Simple_Selection_On_Evaluation<Population_size, T, N_threads>::eval(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw()
 {
     if(selection)
     {
@@ -56,7 +59,6 @@ const std::array<int, Population_size>& Simple_Selection_On_Evaluation<Populatio
             auto logger = Easy_Log_In_File_Threaded_Debug::getInstance().getInfoLog();
         #endif
 
-        std::array<T, Population_size> qualities;
         for(int i=0; i<(int)Population_size; i++)
         {
             #ifdef SIMPLE_SELECTION_THREAD_DEBUG
@@ -65,7 +67,21 @@ const std::array<int, Population_size>& Simple_Selection_On_Evaluation<Populatio
             qualities[i] = evaluation(bits[i], genes);
         }
 
+        return qualities;
+    }
+    else
+        throw std::runtime_error("Error: bad selection pointer in simple selection on evaluation");
+}
+
+template <size_t Population_size, typename T, size_t N_threads>
+const std::array<int, Population_size>& Simple_Selection_On_Evaluation<Population_size, T, N_threads>::eval_select(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw()
+{
+    if(selection)
+    {
+        eval(bits, genes);
+
         #ifdef SIMPLE_SELECTION_THREAD_DEBUG
+            auto logger = Easy_Log_In_File_Threaded_Debug::getInstance().getInfoLog();
             logger->write("In simple selection applying selection on ", Vector_To_String<std::array<T, Population_size> >(&qualities));
         #endif
 

@@ -18,6 +18,7 @@ namespace Interpretation
 template <typename T, typename U>
 U Interpretation::gray_interpretation(const std::vector<T>& adn, int min, int max)
 {
+    return adn[0]+min-max;
     return 0;
 }
 

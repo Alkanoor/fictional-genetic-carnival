@@ -75,18 +75,18 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
         logger->write("Applying on multi selection with ", qualities.size());
     #endif
 
-    for(int j=0; j<N; j++)
+    for(int j=0; j<(int)N; j++)
     {
         U random = distrib(random_engine);
         U sum = 0;
         int i = 0;
-        while(i<M && sum+selection_coeffs[i]<random)
+        while(i<(int)M && sum+selection_coeffs[i]<random)
         {
             sum += selection_coeffs[i];
             i++;
         }
 
-        if(i>=M)
+        if(i>=(int)M)
             throw std::runtime_error("Error: bad value in mult selection, should never happen. Please slap the developper.");
 
         chosen_selection[Selection_::thread_id][j] = i;
@@ -101,7 +101,7 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
 
     std::array<std::array<int,N>, M> temp_selected;
     std::array<std::array<int,N>, M> temp_selected_reversed;
-    for(int i=0; i<M; i++)
+    for(int i=0; i<(int)M; i++)
     {
         temp_selected[i] = selections[i]->apply(qualities, begin_at, already_sorted);
         temp_selected_reversed[i] = selections[i]->get_sorted_reversed();
@@ -112,30 +112,30 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
     }
 
     std::array<int,M> mins;
-    for(int i=0; i<M; i++)
+    for(int i=0; i<(int)M; i++)
     {
         mins[i] = 0;
-        for(int j=0; j<N; j++)
+        for(int j=0; j<(int)N; j++)
             marked[Selection_::thread_id][i][j] = false;
     }
 
-    for(int j=0; j<N; j++)
+    for(int j=0; j<(int)N; j++)
     {
         int index = chosen_selection[Selection_::thread_id][j];
         int o = mins[index];
-        while(o<N && marked[Selection_::thread_id][index][o])
+        while(o<(int)N && marked[Selection_::thread_id][index][o])
             o++;
 
         #ifdef MULTI_SELECTION_DEBUG
             logger->write("After analysis for j=", j, " we have index min o section[o] : ", index, " ", mins[index], " ", o, " => ", (temp_selected[index])[o]);
         #endif
 
-        if(o>=N)
+        if(o>=(int)N)
             throw;
 
         Selection_::selected_sorted[Selection_::thread_id][j] = temp_selected[index][o];
         Selection_::selected_sorted_reversed[Selection_::thread_id][Selection_::selected_sorted[Selection_::thread_id][j]] = j;
-        for(int i=0; i<M; i++)
+        for(int i=0; i<(int)M; i++)
         {
             int p = temp_selected_reversed[i][temp_selected[index][o]];
             marked[Selection_::thread_id][i][p] = true;
@@ -146,9 +146,9 @@ const std::array<int,N>& Multi_Selection<M,N,T,U,N_threads>::apply(const std::ar
 
             if(p==mins[i])
             {
-                while(p<N && marked[Selection_::thread_id][i][p])
+                while(p<(int)N && marked[Selection_::thread_id][i][p])
                     p++;
-                if(p<N)
+                if(p<(int)N)
                     mins[i] = p;
             }
 

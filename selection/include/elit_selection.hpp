@@ -50,7 +50,7 @@ Elit_Selection<N,T,N_threads>::Elit_Selection(int thread_id, int nb_to_keep, std
     number_individuals_to_keep(nb_to_keep),
     default_selection(base)
 {
-    assert(number_individuals_to_keep<=N);
+    assert(number_individuals_to_keep<=(int)N);
 }
 
 template <size_t N, typename T, size_t N_threads>
@@ -78,7 +78,7 @@ const std::array<int,N>& Elit_Selection<N,T,N_threads>::apply(const std::array<T
     for(int i=0; i<number_individuals_to_keep; i++)
         Selection_::selected_sorted_reversed[Selection_::thread_id][Selection_::selected_sorted[Selection_::thread_id][i]] = i;
 
-    for(int i=number_individuals_to_keep; i<N; i++)
+    for(int i=number_individuals_to_keep; i<(int)N; i++)
     {
         Selection_::selected_sorted[Selection_::thread_id][i] = temp[i];
         Selection_::selected_sorted_reversed[Selection_::thread_id][temp[i]] = i;

@@ -14,9 +14,9 @@ EXEC = $(RELEASE_DIR)/test
 LIB = $(RELEASE_DIR)/liblog.so
 
 CC = g++
-CFLAGS = -D_GLIBCXX_USE_CXX11_ABI=0 -Wabi-tag -Wall -Werror -Wextra -O1 -std=c++11 -fPIC
-LDFLAGS = -D_GLIBCXX_USE_CXX11_ABI=0 -lpthread -lstdc++ -fPIC
-LDFLAGS_LIB = -D_GLIBCXX_USE_CXX11_ABI=0 -lpthread -lstdc++ -fPIC -shared
+CFLAGS = -Wall -Werror -Wextra -O1 -std=c++14 -fPIC
+LDFLAGS = -lpthread -fPIC
+LDFLAGS_LIB = -lpthread -fPIC -shared
 
 LOG_DIRS = logs logs/uselessDir logs/uselessDirBis
 
@@ -37,6 +37,8 @@ test: all
 
 lib: createDir $(OBJ)
 	$(CC) -o $(LIB) $(OBJ) $(LDFLAGS_LIB)
+
+obj: createDir $(OBJ)
 
 createDir:
 	@mkdir -p $(OBJ_DIR)

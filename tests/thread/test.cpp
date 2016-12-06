@@ -15,7 +15,7 @@ int long_computation(int a)
     return res;
 }
 
-int reference_block() //about 50ms execution time on current machine
+int reference_block() //about 50ms execution time on current machine (without optimisation)
 {
     for(int j=0; j<1000/45*50.5; j++)
         long_computation(100);
@@ -24,7 +24,7 @@ int reference_block() //about 50ms execution time on current machine
 
 void multiple_reference_blocks(int offset)
 {
-    for(int i=0; i<100; i+=offset)
+    for(int i=0; i<100000; i+=offset)
         reference_block();
 }
 

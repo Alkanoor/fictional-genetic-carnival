@@ -32,7 +32,7 @@ namespace Utils
 template <size_t N, typename U>
 void Utils::apply(int begin_at, std::array<int, N>& sorted, std::array<U, N>& sorted_reversed, const std::function<U(int, int)>& functor_to_be_applied_on_ranks)
 {
-    for(int i=begin_at; i<N; i++)
+    for(int i=begin_at; i<(int)N; i++)
         sorted_reversed[sorted[i]] = functor_to_be_applied_on_ranks(i, N-1);
 }
 

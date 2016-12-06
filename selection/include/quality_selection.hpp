@@ -60,7 +60,7 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         Utils::index_after_sorting(qualities, begin_at, Selection_::selected_sorted[Selection_::thread_id], Selection_::selected_sorted_reversed[Selection_::thread_id]);
 
     T max_cumulated = 0;
-    for(int i=begin_at; i<N; i++)
+    for(int i=begin_at; i<(int)N; i++)
     {
         marked[Selection_::thread_id][i] = false;
         max_cumulated += qualities[Selection_::selected_sorted[Selection_::thread_id][i]];
@@ -77,13 +77,13 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
 
     std::vector<int> indexes(N-begin_at);
     int j = 0, tmp = -1, min_offset = begin_at-1, index;
-    for(int i=begin_at; i<N; i++)
+    for(int i=begin_at; i<(int)N; i++)
     {
         T random_01 = distrib(random_engine);
         T cumulated = 0;
         index = 0;
         tmp = -1;
-        for(j=min_offset+1; j<N; j++)
+        for(j=min_offset+1; j<(int)N; j++)
         {
             index = Selection_::selected_sorted[Selection_::thread_id][j];
             if(!marked[Selection_::thread_id][j])
@@ -107,7 +107,7 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         if(tmp<0)
             throw std::runtime_error("Error: bad value in mult selection, should never happen. Please slap the developper.");
 
-        if(j>=N)
+        if(j>=(int)N)
         {
             j = tmp;
             index = Selection_::selected_sorted[Selection_::thread_id][j];
@@ -117,7 +117,7 @@ const std::array<int, N>& Quality_Selection<N,T,N_threads>::apply(const std::arr
         if(j==min_offset+1)
         {
             min_offset = j;
-            while(min_offset+1<N && marked[Selection_::thread_id][min_offset+1])
+            while(min_offset+1<(int)N && marked[Selection_::thread_id][min_offset+1])
                 min_offset++;
         }
 
