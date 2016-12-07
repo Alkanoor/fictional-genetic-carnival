@@ -2,6 +2,9 @@
 #define GENETIC_ALGORITHM_HPP
 
 
+#define MAX_INDIVIDUALS_MERGED 10
+
+
 ///************************************************************************************************************
 /// Class that provides core of genetic algorithm
 ///
@@ -9,7 +12,7 @@
 ///                        (depend of rank of current considered individuals)
 ///                        (if not set, default is proba 1 for 1 cut in ADN)
 /// - proba_merging_n_individuals : at index i is probability of merging i+1 individuals during crossover
-///                                 (depend of rank of current considered individuals)
+///                                 (depend of ratio of processed individuals)
 ///                                 (if not set, default is proba 0.4 for 1 implied individual and
 ///                                                               0.6 for 2 implied individuals)
 ///
@@ -45,6 +48,8 @@ class Genetic_Algorithm
         const std::array<T, Population_size>& get_evaluated() const;
         const std::array<std::vector<char>, Population_size>& get_population() const;
 
+        static void default_choose_individuals(int n_choices, const std::array<T, Population_size>& evaluated, std::array<int, Population_size>& cur_choice, int nb_to_keep);
+
     private:
         size_t nb_to_keep;
 
@@ -55,7 +60,7 @@ class Genetic_Algorithm
         std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)> cross;
         std::function<void(std::vector<std::vector<char>&>&, const Genotype&, int)> cross_multiple;
 
-        std::function<const std::vector<float>&(int)> proba_merging_n_individuals;
+        std::function<const std::vector<float>&(float)> proba_merging_n_individuals;
         std::function<const std::array<float, Max_nb_crossovers>&(int)> proba_n_crossovers;
 
         Genotype genes;
@@ -65,7 +70,8 @@ class Genetic_Algorithm
         std::array<std::vector<char>, Population_size> next_generation;
 
         float mutation_rate;
-        int number_crossovers;
+
+        void hook_data();
 };
 
 Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
@@ -78,22 +84,6 @@ Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
     assert(Population_size>=N);
 }
 
-void Genetic_Algorithm::run()
-{
-    generate_population();
-    for(int i=0; i<N_iterations;i++)
-    {
-        evaluate_and_select();
-        if(hook)
-            hook_data();
-        mutate_and_cross_over();
-    }
-    evaluate_and_select();
-    if(hook)
-        hook_data();
-    else
-        evaluated = eval->eval_select(bits_of_individuals, genes);
-}
 
 void Genetic_Algorithm::generate_population()
 {
@@ -110,12 +100,15 @@ void  Genetic_Algorithm::evaluate_and_select()
 
 void  Genetic_Algorithm::mutate_and_cross_over()
 {
+    //first individuals are selected ones
     for(int i=0; i<nb_to_keep; i++)
         next_generation[i] = bits_of_individuals[sorted_selected[i]];
 
+    //crossover
     int n_cuts = 1, n_choices = 1;
     for(int i=nb_to_keep; i<Population_size;)
     {
+        //choose number of individuals that will be merged
         if(cross_multiple && proba_merging_n_individuals)
         {
             auto probas = proba_merging_n_individuals((float)i/(float)Population_size);
@@ -128,20 +121,24 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         }
         else
         {
+            //40% chance not beeing merged if no specific behaviour is set
             if(rand()%10<4)
                 n_choices = 1;
             else
                 n_choices = 2;
         }
 
+        //we can't merge more individuals than possible
         if(n_choices+i > Population_size)
             n_choices = Population_size-i;
 
+        //choose individuals to merge, default is random different selected individuals
         if(choose_individuals_to_merge)
             choose_individuals_to_merge(n_choices, evaluated, cur_choice, nb_to_keep);
         else
-            default_choose_individuals(n_choices, evaluated, cur_choice, nb_to_keep);
+            default_choose_individuals(n_choices, cur_choice, nb_to_keep);
 
+        //perform the crossover(s) if there is
         if(n_choices==1)
             next_generation[i] = bits_of_individuals[sorted_selected[cur_choice[0]]];
         else
@@ -177,7 +174,41 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         i += n_choices;
     }
 
+    //mutate
+    for(int i=nb_to_keep; i<Population_size; i++)
+        mutate(next_generation[i], genes, mutation_rate);
+
+    //swap with normal population
     std::swap(bits_of_individuals, next_generation);
+}
+
+void Genetic_Algorithm::run()
+{
+    generate_population();
+    for(int i=0; i<N_iterations;i++)
+    {
+        evaluate_and_select();
+        if(hook)
+            hook_data();
+        mutate_and_cross_over();
+    }
+    evaluate_and_select();
+    if(hook)
+        hook_data();
+    else
+        evaluated = eval->eval_select(bits_of_individuals, genes);
+}
+
+void Genetic_Algorithm::default_choose_individuals(int n_choices, std::array<int, Population_size>& cur_choice, int nb_to_keep)
+{
+    int tmp;
+    std::hashmap<int> counter;
+    for(int i=0; i<n_choices; i++)
+    {
+        while(counter.count(tmp=(rand()%nb_to_keep)))
+            ;
+        cur_choice[i] = tmp;
+    }
 }
 
 void Genetic_Algorithm::hook_data()
