@@ -3,6 +3,7 @@
 
 
 #define MAX_INDIVIDUALS_MERGED 10
+#define LOG_STEPS
 
 
 ///************************************************************************************************************
@@ -48,6 +49,8 @@ class Genetic_Algorithm
         const std::array<T, Population_size>& get_evaluated() const;
         const std::array<std::vector<char>, Population_size>& get_population() const;
 
+        void set_hook_object(const Hook_Object& hook);
+
         static void default_choose_individuals(int n_choices, const std::array<T, Population_size>& evaluated, std::array<int, Population_size>& cur_choice, int nb_to_keep);
 
     private:
@@ -71,6 +74,11 @@ class Genetic_Algorithm
 
         float mutation_rate;
 
+        #ifdef LOG_STEPS
+            Easy_Log_In_File_Threaded logger;
+        #endif
+
+        Hook_Object hook_object;
         void hook_data();
 };
 
@@ -82,24 +90,32 @@ Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
 {
     assert(N>2);
     assert(Population_size>=N);
+
+    logger = Easy_Log_In_File_Threaded::getInstance();
 }
 
 
 void Genetic_Algorithm::generate_population()
 {
+    logger.getInfoLog().write("[+] Generating ", Population_size, " sized population");
     for(int i=0; i<(int)Population_size; i++)
         bits_of_individuals = random_individual(genes);
 }
 
 void  Genetic_Algorithm::evaluate_and_select()
 {
+    logger.getInfoLog().write("[+] Evaluating and selecting current population");
     sorted_selected = eval_and_select->eval_select(bits_of_individuals, genes);
+    logger.getInfoLog().write("[.] Current selection order is ", Vector_To_String<std::array<int, Population_size> >(&sorted_selected));
     if(hook)
         evaluated = eval->eval_select(bits_of_individuals, genes);
 }
 
 void  Genetic_Algorithm::mutate_and_cross_over()
 {
+    logger.getInfoLog().write("[+] Crossing over on current population");
+    logger.getInfoLog().write("[.] Keeping ", nb_to_keep, " individuals out of ", Population_size);
+
     //first individuals are selected ones
     for(int i=0; i<nb_to_keep; i++)
         next_generation[i] = bits_of_individuals[sorted_selected[i]];
@@ -132,6 +148,8 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         if(n_choices+i > Population_size)
             n_choices = Population_size-i;
 
+        logger.getInfoLog().write("[.] ", n_choices, " individual(s) will be merged");
+
         //choose individuals to merge, default is random different selected individuals
         if(choose_individuals_to_merge)
             choose_individuals_to_merge(n_choices, evaluated, cur_choice, nb_to_keep);
@@ -140,16 +158,22 @@ void  Genetic_Algorithm::mutate_and_cross_over()
 
         //perform the crossover(s) if there is
         if(n_choices==1)
+        {
+            logger.getInfoLog().write("[.] ", cur_choice[0], " individual is repeated");
             next_generation[i] = bits_of_individuals[sorted_selected[cur_choice[0]]];
+        }
         else
         {
+            logger.getInfoLog()<<"[.] ";
             int min = cur_choice[0];
             for(int j=0; j<n_choices; j++)
             {
+                logger.getInfoLog()<<sorted_selected[cur_choice[j]]<<" ";
                 next_generation[i+j] = bits_of_individuals[sorted_selected[cur_choice[j]]];
                 if(cur_choice[j] < min)
                     min = cur_choice[j];
             }
+            logger.getInfoLog()<<" will be merged"<<std::endl;
 
             if(!proba_n_crossovers)
                 n_cuts = 1;
@@ -160,6 +184,8 @@ void  Genetic_Algorithm::mutate_and_cross_over()
                 auto chosen_cuts = q.apply(probas);
                 n_cuts = chosen_cuts[0]+1;
             }
+            logger.getInfoLog().write("[.] ", n_cuts, " will be performed");
+
             if(n_choices==2)
                 cross(next_generation[i], next_generation[i+1], genes, nb_cuts);
             else
@@ -174,6 +200,7 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         i += n_choices;
     }
 
+    logger.getInfoLog().write("[+] Mutating population");
     //mutate
     for(int i=nb_to_keep; i<Population_size; i++)
         mutate(next_generation[i], genes, mutation_rate);
@@ -185,18 +212,26 @@ void  Genetic_Algorithm::mutate_and_cross_over()
 void Genetic_Algorithm::run()
 {
     generate_population();
+    evaluated = eval->eval_select(bits_of_individuals, genes);
+    logger.getInfoLog().write("[+] At the beginning evaluation should be bad : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
+
     for(int i=0; i<N_iterations;i++)
     {
+        logger.getInfoLog().write("[+] Performing iteration ", i);
         evaluate_and_select();
         if(hook)
             hook_data();
         mutate_and_cross_over();
     }
+
     evaluate_and_select();
     if(hook)
         hook_data();
     else
+    {
         evaluated = eval->eval_select(bits_of_individuals, genes);
+        logger.getInfoLog().write("[+] At the end evaluation should be good : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
+    }
 }
 
 void Genetic_Algorithm::default_choose_individuals(int n_choices, std::array<int, Population_size>& cur_choice, int nb_to_keep)

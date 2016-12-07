@@ -92,7 +92,7 @@ class Thread
         #ifdef LOG_EXCEPTIONS
             std::shared_ptr<Info_Warning_Error_Logger> error_logger;
         #endif
-        #ifdef LOG_DEBUG
+        #ifdef LOG_MUTEX_DEBUG
             static Easy_Log_In_File_Threaded_Debug debug_logger;
         #endif
 
