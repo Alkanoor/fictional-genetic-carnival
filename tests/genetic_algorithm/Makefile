@@ -1,8 +1,5 @@
-SRC_DIR1 = ../../logger
-SRC_DIR2 = ../../threads
-SRC_DIR3 = ../../utils
-SRC_DIRS = $(SRC_DIR1) $(SRC_DIR2) $(SRC_DIR3)
-OBJS = $(wildcard $(SRC_DIR1)/obj/*.o) $(wildcard $(SRC_DIR2)/obj/*.o) $(wildcard $(SRC_DIR3)/obj/*.o)
+SRC_DIRS = ../../logger ../../threads ../../utils
+OBJS = $(addsuffix /obj/*.o, $(SRC_DIRS))
 SRC = test.cpp
 
 CC = g++
@@ -10,6 +7,7 @@ CFLAGS = -Wall -Werror -Wextra -O1 -std=c++14 -I../..
 LDFLAGS = -lpthread
 
 EXEC = test
+
 
 .PHONY: $(SRC_DIRS)
 

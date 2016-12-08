@@ -1,6 +1,5 @@
-SRC_DIR1 = ../../logger
-SRC_DIRS = $(SRC_DIR1)
-OBJS = $(wildcard $(SRC_DIR1)/obj/*.o)
+SRC_DIRS = ../../logger
+OBJS = $(addsuffix /obj/*.o, $(SRC_DIRS))
 SRC = test.cpp
 
 CC = g++
@@ -9,9 +8,10 @@ LDFLAGS =
 
 EXEC = test
 
+
 .PHONY: $(SRC_DIRS)
 
-$(EXEC): $(SRC_DIRS) $(OBJ)
+$(EXEC): $(SRC_DIRS)
 	$(CC) -o $@ $(OBJS) $(SRC) $(CFLAGS) $(LDFLAGS)
 
 $(SRC_DIRS):

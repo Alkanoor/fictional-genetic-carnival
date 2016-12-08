@@ -1,7 +1,5 @@
-SRC_DIR1 = ../../genetic
-SRC_DIR2 = ../../logger
-SRC_DIRS = $(SRC_DIR1) $(SRC_DIR2)
-OBJS = $(wildcard $(SRC_DIR1)/obj/*.o) $(wildcard $(SRC_DIR2)/obj/*.o)
+SRC_DIRS = ../../genetic ../../logger
+OBJS = $(addsuffix /obj/*.o, $(SRC_DIRS))
 SRC = test.cpp
 
 CC = g++
@@ -9,6 +7,7 @@ CFLAGS = -Wall -Werror -Wextra -O1 -std=c++14 -I../..
 LDFLAGS =
 
 EXEC = test
+
 
 .PHONY: $(SRC_DIRS)
 
