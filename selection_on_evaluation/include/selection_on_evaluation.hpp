@@ -11,11 +11,12 @@
 /// Abstract class that provides template for selections on evaluations
 ///*********************************************************************************
 
-template <size_t Population_size, typename T>
+template <size_t Population_size, typename T, typename U>
 class Selection_On_Evaluation
 {
     public:
-        virtual const T& eval_select(const std::array<std::vector<char>, Population_size>&, Genotype&) throw() = 0;
+        virtual const std::array<T, Population_size>& eval(const std::array<std::vector<char>, Population_size>&, Genotype&) throw() = 0;
+        virtual const U& eval_select(const std::array<std::vector<char>, Population_size>&, Genotype&) throw() = 0;
 };
 
 

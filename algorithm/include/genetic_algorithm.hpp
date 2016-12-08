@@ -29,7 +29,7 @@
 ///                    genotype and number cuts to perform
 ///************************************************************************************************************
 
-template <size_t Population_size, size_t Max_nb_crossovers>
+template <size_t Population_size, size_t Max_nb_crossovers=10>
 class Genetic_Algorithm
 {
     public:
@@ -37,7 +37,11 @@ class Genetic_Algorithm
                           const std::function<const std::vector<char>&(const Genotype&)>& generate,
                           const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& eval_select,
                           const std::function<void(std::vector<char>&, const Genotype&, float)>& mutate,
-                          const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross);
+                          const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross
+                          #ifdef LOG_STEPS
+                            ,const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& log = Easy_Log_In_File_Threaded::getInstance()
+                          #endif
+                         );
 
         void generate_population();
         void evaluate_and_select();
@@ -75,46 +79,64 @@ class Genetic_Algorithm
         float mutation_rate;
 
         #ifdef LOG_STEPS
-            Easy_Log_In_File_Threaded logger;
+            std::shared_ptr<Info_Warning_Error_Logger> logger;
         #endif
 
         Hook_Object hook_object;
         void hook_data();
 };
 
-Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
+
+template <size_t Population_size, size_t Max_nb_crossovers>
+Genetic_Algorithm<Population_size, Max_nb_crossovers>::Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
                   const std::function<const std::vector<char>&(const Genotype&)>& generate,
                   const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& eval_select,
                   const std::function<void(std::vector<char>&, const Genotype&, float)>& mutate,
-                  const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross)
+                  const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross
+                  #ifdef LOG_STEPS
+                    ,const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& log = Easy_Log_In_File_Threaded::getInstance()
+                  #endif
+                 )
+    #ifdef LOG_STEPS
+        : logger(log)
+    #endif
 {
     assert(N>2);
     assert(Population_size>=N);
-
-    logger = Easy_Log_In_File_Threaded::getInstance();
 }
 
-
-void Genetic_Algorithm::generate_population()
+template <size_t Population_size, size_t Max_nb_crossovers>
+void Genetic_Algorithm<Population_size, Max_nb_crossovers>::generate_population()
 {
-    logger.getInfoLog().write("[+] Generating ", Population_size, " sized population");
+    #ifdef LOG_STEPS
+        logger->write("[+] Generating ", Population_size, " sized population");
+    #endif
     for(int i=0; i<(int)Population_size; i++)
         bits_of_individuals = random_individual(genes);
 }
 
 void  Genetic_Algorithm::evaluate_and_select()
 {
-    logger.getInfoLog().write("[+] Evaluating and selecting current population");
+    #ifdef LOG_STEPS
+        logger->write("[+] Evaluating and selecting current population");
+    #endif
+
     sorted_selected = eval_and_select->eval_select(bits_of_individuals, genes);
-    logger.getInfoLog().write("[.] Current selection order is ", Vector_To_String<std::array<int, Population_size> >(&sorted_selected));
+
+    #ifdef LOG_STEPS
+        logger->write("[.] Current selection order is ", Vector_To_String<std::array<int, Population_size> >(&sorted_selected));
+    #endif
+
     if(hook)
         evaluated = eval->eval_select(bits_of_individuals, genes);
 }
 
 void  Genetic_Algorithm::mutate_and_cross_over()
 {
-    logger.getInfoLog().write("[+] Crossing over on current population");
-    logger.getInfoLog().write("[.] Keeping ", nb_to_keep, " individuals out of ", Population_size);
+    #ifdef LOG_STEPS
+        logger->write("[+] Crossing over on current population");
+        logger->write("[.] Keeping ", nb_to_keep, " individuals out of ", Population_size);
+    #endif
 
     //first individuals are selected ones
     for(int i=0; i<nb_to_keep; i++)
@@ -148,7 +170,9 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         if(n_choices+i > Population_size)
             n_choices = Population_size-i;
 
-        logger.getInfoLog().write("[.] ", n_choices, " individual(s) will be merged");
+        #ifdef LOG_STEPS
+            logger->write("[.] ", n_choices, " individual(s) will be merged");
+        #endif
 
         //choose individuals to merge, default is random different selected individuals
         if(choose_individuals_to_merge)
@@ -159,7 +183,9 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         //perform the crossover(s) if there is
         if(n_choices==1)
         {
-            logger.getInfoLog().write("[.] ", cur_choice[0], " individual is repeated");
+            #ifdef LOG_STEPS
+                logger->write("[.] ", cur_choice[0], " individual is repeated");
+            #endif
             next_generation[i] = bits_of_individuals[sorted_selected[cur_choice[0]]];
         }
         else
@@ -173,7 +199,9 @@ void  Genetic_Algorithm::mutate_and_cross_over()
                 if(cur_choice[j] < min)
                     min = cur_choice[j];
             }
-            logger.getInfoLog()<<" will be merged"<<std::endl;
+            #ifdef LOG_STEPS
+                logger.getInfoLog()<<" will be merged"<<std::endl;
+            #endif
 
             if(!proba_n_crossovers)
                 n_cuts = 1;
@@ -184,7 +212,9 @@ void  Genetic_Algorithm::mutate_and_cross_over()
                 auto chosen_cuts = q.apply(probas);
                 n_cuts = chosen_cuts[0]+1;
             }
-            logger.getInfoLog().write("[.] ", n_cuts, " will be performed");
+            #ifdef LOG_STEPS
+                logger->write("[.] ", n_cuts, " will be performed");
+            #endif
 
             if(n_choices==2)
                 cross(next_generation[i], next_generation[i+1], genes, nb_cuts);
@@ -200,7 +230,10 @@ void  Genetic_Algorithm::mutate_and_cross_over()
         i += n_choices;
     }
 
-    logger.getInfoLog().write("[+] Mutating population");
+    #ifdef LOG_STEPS
+        logger->write("[+] Mutating population");
+    #endif
+
     //mutate
     for(int i=nb_to_keep; i<Population_size; i++)
         mutate(next_generation[i], genes, mutation_rate);
@@ -213,11 +246,16 @@ void Genetic_Algorithm::run()
 {
     generate_population();
     evaluated = eval->eval_select(bits_of_individuals, genes);
-    logger.getInfoLog().write("[+] At the beginning evaluation should be bad : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
+
+    #ifdef LOG_STEPS
+        logger->write("[+] At the beginning evaluation should be bad : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
+    #endif
 
     for(int i=0; i<N_iterations;i++)
     {
-        logger.getInfoLog().write("[+] Performing iteration ", i);
+        #ifdef LOG_STEPS
+            logger->write("[+] Performing iteration ", i);
+        #endif
         evaluate_and_select();
         if(hook)
             hook_data();
@@ -230,18 +268,21 @@ void Genetic_Algorithm::run()
     else
     {
         evaluated = eval->eval_select(bits_of_individuals, genes);
-        logger.getInfoLog().write("[+] At the end evaluation should be good : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
+        #ifdef LOG_STEPS
+            logger->write("[+] At the end evaluation should be good : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
+        #endif
     }
 }
 
 void Genetic_Algorithm::default_choose_individuals(int n_choices, std::array<int, Population_size>& cur_choice, int nb_to_keep)
 {
     int tmp;
-    std::hashmap<int> counter;
+    std::set<int> counter;
     for(int i=0; i<n_choices; i++)
     {
         while(counter.count(tmp=(rand()%nb_to_keep)))
             ;
+        counter.insert(tmp);
         cur_choice[i] = tmp;
     }
 }

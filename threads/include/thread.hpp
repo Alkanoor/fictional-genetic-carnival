@@ -32,10 +32,10 @@ class Thread
     public:
         Thread(int id, bool autostart = true, double sleep_between_instance = 0.1, double sleep_between_operations = 0.05, const std::function<void(double)>& sleep_function = std::bind(sleep,std::placeholders::_1)
                 #ifdef LOG_EVENTS
-                    , const std::shared_ptr<Info_Warning_Error_Logger>& info_logger = Easy_Log_In_File_Threaded::getInfoLog()
+                    , const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& info_logger = Easy_Log_In_File_Threaded::getInfoLog()
                 #endif
                 #ifdef LOG_EXCEPTIONS
-                    , const std::shared_ptr<Info_Warning_Error_Logger>& error_logger = Easy_Log_In_File_Threaded::getErrorLog()
+                    , const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& error_logger = Easy_Log_In_File_Threaded::getErrorLog()
                 #endif
                );
         ~Thread();
@@ -87,13 +87,13 @@ class Thread
         std::vector<std::function<void()> > to_exec;
 
         #ifdef LOG_EVENTS
-            std::shared_ptr<Info_Warning_Error_Logger> events_logger;
+            std::shared_ptr<Info_Warning_Error_Logger_Threaded> events_logger;
         #endif
         #ifdef LOG_EXCEPTIONS
-            std::shared_ptr<Info_Warning_Error_Logger> error_logger;
+            std::shared_ptr<Info_Warning_Error_Logger_Threaded> error_logger;
         #endif
         #ifdef LOG_MUTEX_DEBUG
-            static Easy_Log_In_File_Threaded_Debug debug_logger;
+            static std::shared_ptr<Info_Warning_Error_Logger_Threaded_Debug> debug_logger;
         #endif
 
         static std::map<int, Thread*> threads;

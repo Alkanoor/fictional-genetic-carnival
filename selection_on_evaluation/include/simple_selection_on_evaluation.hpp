@@ -19,7 +19,7 @@
 ///*********************************************************************************
 
 template <size_t Population_size, typename T, size_t N_threads=1>
-class Simple_Selection_On_Evaluation : public Selection_On_Evaluation<Population_size, std::array<int, Population_size> >
+class Simple_Selection_On_Evaluation : public Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> >
 {
     public:
         Simple_Selection_On_Evaluation(const std::function<T(const std::vector<char>&, Genotype&)>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select);

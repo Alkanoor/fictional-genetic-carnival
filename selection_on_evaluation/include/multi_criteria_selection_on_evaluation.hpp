@@ -16,10 +16,11 @@
 /// Class that provides composition of evaluation and selection based on multiple criteria
 /// and which auto shares load among available threads
 ///  Population_size  is the number of individuals in the population
+///  T                is the type that is used for evaluation
 ///*****************************************************************************************
 
-template <size_t Population_size>
-class Multi_Criteria_Selection_On_Evaluation : public Selection_On_Evaluation<Population_size, std::vector<std::array<int, Population_size> > >
+template <size_t Population_size, typename T>
+class Multi_Criteria_Selection_On_Evaluation
 {
     public:
         Multi_Criteria_Selection_On_Evaluation(
@@ -30,7 +31,7 @@ class Multi_Criteria_Selection_On_Evaluation : public Selection_On_Evaluation<Po
                                         Thread_Pool()
                                     #endif
                                 );
-        Multi_Criteria_Selection_On_Evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& selection_on_evaluation,
+        Multi_Criteria_Selection_On_Evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > >& selection_on_evaluation,
                                 const Thread_Pool& pool =
                                     #ifdef ADD_TO_DEFAULT_POOL
                                         Thread::get_default_pool()
@@ -38,7 +39,7 @@ class Multi_Criteria_Selection_On_Evaluation : public Selection_On_Evaluation<Po
                                         Thread_Pool()
                                     #endif
                                 );
-        Multi_Criteria_Selection_On_Evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > > >& selections_on_evaluations,
+        Multi_Criteria_Selection_On_Evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > > >& selections_on_evaluations,
                                 const Thread_Pool& pool =
                                     #ifdef ADD_TO_DEFAULT_POOL
                                         Thread::get_default_pool()
@@ -47,9 +48,10 @@ class Multi_Criteria_Selection_On_Evaluation : public Selection_On_Evaluation<Po
                                     #endif
                                 );
 
-        void add_selection_on_evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& selection_on_evaluation);
-        void add_selections_on_evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > > >& selections_on_evaluations);
+        void add_selection_on_evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > >& selection_on_evaluation);
+        void add_selections_on_evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > > >& selections_on_evaluations);
 
+        const std::vector<std::array<T, Population_size>&>& eval(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw ();
         const std::vector<std::array<int, Population_size> >& eval_select(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw ();
 
         void assign_buffer(int id, const std::array<std::vector<char>, Population_size>& bits, Genotype& genes);
@@ -60,40 +62,39 @@ class Multi_Criteria_Selection_On_Evaluation : public Selection_On_Evaluation<Po
 
         const Thread_Pool& default_pool;
 
-        typedef Multi_Criteria_Selection_On_Evaluation<Population_size> Multi_Criteria_Selection_On_Evaluation_;
+        typedef Multi_Criteria_Selection_On_Evaluation<Population_size, T> Multi_Criteria_Selection_On_Evaluation_;
 };
 
-
-template <size_t Population_size>
-Multi_Criteria_Selection_On_Evaluation<Population_size>::Multi_Criteria_Selection_On_Evaluation(const Thread_Pool& pool) :
+template <size_t Population_size, typename T>
+Multi_Criteria_Selection_On_Evaluation<Population_size, T>::Multi_Criteria_Selection_On_Evaluation(const Thread_Pool& pool) :
     default_pool(pool)
 {}
 
-template <size_t Population_size>
-Multi_Criteria_Selection_On_Evaluation<Population_size>::Multi_Criteria_Selection_On_Evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& selection_on_evaluation, const Thread_Pool& pool) :
+template <size_t Population_size, typename T>
+Multi_Criteria_Selection_On_Evaluation<Population_size, T>::Multi_Criteria_Selection_On_Evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > >& selection_on_evaluation, const Thread_Pool& pool) :
     default_pool(pool)
 {
     selections_on_evaluations.push_back(selection_on_evaluation);
     current_selected.push_back(std::array<int, Population_size>());
 }
 
-template <size_t Population_size>
-Multi_Criteria_Selection_On_Evaluation<Population_size>::Multi_Criteria_Selection_On_Evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > > >& selections_on_evaluations, const Thread_Pool& pool) :
+template <size_t Population_size, typename T>
+Multi_Criteria_Selection_On_Evaluation<Population_size, T>::Multi_Criteria_Selection_On_Evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > > >& selections_on_evaluations, const Thread_Pool& pool) :
     selections_on_evaluations(selections_on_evaluations),
     default_pool(pool)
 {
     current_selected.resize(selections_on_evaluations.size());
 }
 
-template <size_t Population_size>
-void Multi_Criteria_Selection_On_Evaluation<Population_size>::add_selection_on_evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& selection_on_evaluation)
+template <size_t Population_size, typename T>
+void Multi_Criteria_Selection_On_Evaluation<Population_size, T>::add_selection_on_evaluation(const std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > >& selection_on_evaluation)
 {
     selections_on_evaluations.push_back(selection_on_evaluation);
     current_selected.push_back(std::array<int, Population_size>());
 }
 
-template <size_t Population_size>
-void Multi_Criteria_Selection_On_Evaluation<Population_size>::add_selections_on_evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > > >& selections_on_evaluations)
+template <size_t Population_size, typename T>
+void Multi_Criteria_Selection_On_Evaluation<Population_size, T>::add_selections_on_evaluation(const std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > > >& selections_on_evaluations)
 {
     for(auto selection : selections_on_evaluations)
     {
@@ -102,8 +103,8 @@ void Multi_Criteria_Selection_On_Evaluation<Population_size>::add_selections_on_
     }
 }
 
-template <size_t Population_size>
-const std::vector<std::array<int, Population_size> >& Multi_Criteria_Selection_On_Evaluation<Population_size>::eval_select(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw()
+template <size_t Population_size, typename T>
+const std::vector<std::array<int, Population_size> >& Multi_Criteria_Selection_On_Evaluation<Population_size, T>::eval_select(const std::array<std::vector<char>, Population_size>& bits, Genotype& genes) throw()
 {
     int n_to_split = (int)selections_on_evaluations.size();
     int n_threads = (int)default_pool.size()+1;
@@ -147,8 +148,8 @@ const std::vector<std::array<int, Population_size> >& Multi_Criteria_Selection_O
     return current_selected;
 }
 
-template <size_t Population_size>
-void Multi_Criteria_Selection_On_Evaluation<Population_size>::assign_buffer(int id, const std::array<std::vector<char>, Population_size>& bits, Genotype& genes)
+template <size_t Population_size, typename T>
+void Multi_Criteria_Selection_On_Evaluation<Population_size, T>::assign_buffer(int id, const std::array<std::vector<char>, Population_size>& bits, Genotype& genes)
 {
     current_selected[id] = selections_on_evaluations[id]->eval_select(bits, genes);
 }
