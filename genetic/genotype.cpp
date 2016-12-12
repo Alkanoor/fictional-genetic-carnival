@@ -4,19 +4,29 @@
 
 
 Genotype::Genotype(bool save_current_adn) :
-    save_current_adn(save_current_adn)
+    save_current_adn(save_current_adn),
+    min_adn_location(0),
+    max_adn_location(0)
 {}
 
 void Genotype::add_gene(const Gene<float>& g)
 {
     float_genes.push_back(g);
     float_interpreted.push_back(0);
+    if(g.get_min_location() < min_adn_location)
+        min_adn_location = g.get_min_location();
+    if(g.get_max_location() < max_adn_location)
+        max_adn_location = g.get_max_location();
 }
 
 void Genotype::add_gene(const Gene<int>& g)
 {
     integer_genes.push_back(g);
     integer_interpreted.push_back(0);
+    if(g.get_min_location() < min_adn_location)
+        min_adn_location = g.get_min_location();
+    if(g.get_max_location() < max_adn_location)
+        max_adn_location = g.get_max_location();
 }
 
 void Genotype::interprete(const std::vector<char>& adn)
@@ -66,3 +76,15 @@ const Gene<float>& Genotype::get_gene_float(const std::string& s) const
             return g;
     throw std::runtime_error("Error: no gene with id "+s);
 }
+
+size_t Genotype::get_number_integer_genes() const
+{return integer_genes.size();}
+
+size_t Genotype::get_number_float_genes() const
+{return float_genes.size();}
+
+int Genotype::get_min_location() const
+{return min_adn_location;}
+
+int Genotype::get_max_location() const
+{return max_adn_location;}

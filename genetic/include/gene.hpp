@@ -22,6 +22,8 @@ class Gene
         T get_current_interpretation() const;
 
         const std::string& get_name() const;
+        int get_min_location() const;
+        int get_max_location() const;
 
     private:
         std::string name;
@@ -76,6 +78,13 @@ T Gene<T>::get_current_interpretation() const
 template <typename T>
 const std::string& Gene<T>::get_name() const
 {return name;}
+
+template <typename T>
+int Gene<T>::get_min_location() const
+{return min_adn_location;}
+
+int Gene<T>::get_max_location() const
+{return min_adn_location;}
 
 
 #endif
