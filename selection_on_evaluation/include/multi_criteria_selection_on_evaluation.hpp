@@ -57,7 +57,7 @@ class Multi_Criteria_Selection_On_Evaluation
         void assign_buffer(int id, const std::array<std::vector<char>, Population_size>& bits, Genotype& genes);
 
     private:
-        std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > > > selections_on_evaluations;
+        std::vector<std::shared_ptr<Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> > > > selections_on_evaluations;
         std::vector<std::array<int, Population_size> > current_selected;
 
         const Thread_Pool& default_pool;

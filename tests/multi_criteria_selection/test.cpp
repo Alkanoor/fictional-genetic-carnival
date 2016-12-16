@@ -78,7 +78,7 @@ int main()
     auto select1 = std::make_shared<Absolute_Selection<POPULATION_SIZE, float, 3> >(1);
     auto select2 = std::make_shared<Absolute_Selection<POPULATION_SIZE, float, 3> >(2);
 
-    Multi_Criteria_Selection_On_Evaluation<POPULATION_SIZE> multi_criteria_selection;
+    Multi_Criteria_Selection_On_Evaluation<POPULATION_SIZE, float> multi_criteria_selection;
 
     auto selection_on_evaluation0 = std::make_shared<Simple_Selection_On_Evaluation<POPULATION_SIZE, float, 3> >(eval_function1, select0);
     auto selection_on_evaluation1 = std::make_shared<Simple_Selection_On_Evaluation<POPULATION_SIZE, float, 3> >(eval_function2, select1);

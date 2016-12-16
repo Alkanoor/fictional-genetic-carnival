@@ -7,12 +7,15 @@
 #define LOG_STEPS
 
 
+#include "genetic_utils.hpp"
+
+
 ///************************************************************************************************************
 /// Class that provides core of genetic algorithm
 ///
 /// - proba_n_crossovers : at index i is probability of having i+1 cut(s) in ADN during crossover
 ///                        (depend of minimum rank of current considered individuals)
-///                        (if not set, default is proba 1 for 1 cut in ADN)
+///                        (if not set, default is proba 1 for 2 cuts in ADN)
 /// - proba_merging_n_individuals : at index i is probability of merging i+1 individuals during crossover
 ///                                 (depend of ratio of processed individuals)
 ///                                 (if not set, default is proba 0.4 for 1 implied individual and
@@ -34,11 +37,11 @@ template <size_t Population_size, typename T, size_t Max_nb_crossovers=10>
 class Genetic_Algorithm
 {
     public:
-        Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
-                          const std::function<const std::vector<char>&(const Genotype&)>& generate,
+        Genetic_Algorithm(size_t N_iterations, size_t to_keep, float mutation_rate, const Genotype& genes,
                           const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& eval_select,
-                          const std::function<void(std::vector<char>&, const Genotype&, float)>& mutate,
-                          const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross
+                          const std::function<const std::vector<char>&(const Genotype&)>& generate = std::bind(&Genetic_Utils::static_basic_random_individual_0_1, std::placeholders::_1),
+                          const std::function<void(std::vector<char>&, const Genotype&, float)>& mutate = std::bind(&Genetic_Utils::mutate_basic_uniform_flip, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                          const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross = std::bind(&Genetic_Utils::cross_basic, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                           #ifdef LOG_STEPS
                             ,const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& log = Easy_Log_In_File_Threaded::getInstance()
                           #endif
@@ -56,9 +59,10 @@ class Genetic_Algorithm
 
         void set_hook_object(const Hook_Object& hook);
 
-        static void default_choose_individuals(int n_choices, const std::array<T, Population_size>& evaluated, std::array<int, Population_size>& cur_choice, int nb_to_keep);
+        static void default_choose_individuals(int n_choices, std::array<int, Population_size>& cur_choice, int nb_to_keep);
 
     private:
+        size_t N_iterations;
         size_t nb_to_keep;
 
         std::function<const std::vector<char>&(const Genotype&)> random_individual;
@@ -70,6 +74,8 @@ class Genetic_Algorithm
 
         std::function<const std::vector<float>&(float)> proba_merging_n_individuals;
         std::function<const std::array<float, Max_nb_crossovers>&(int)> proba_n_crossovers;
+
+        std::function<void(int, const std::array<T, Population_size>&, std::array<int, Population_size>&, int)> choose_individuals_to_merge;
 
         Genotype genes;
         std::array<T, Population_size> evaluated;
@@ -89,21 +95,29 @@ class Genetic_Algorithm
 
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
-Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::Genetic_Algorithm(size_t N, float mutation_rate, const Genotype& genes,
-                  const std::function<const std::vector<char>&(const Genotype&)>& generate,
+Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::Genetic_Algorithm(size_t N_iterations, size_t to_keep, float mutation_rate, const Genotype& genes,
                   const std::shared_ptr<Selection_On_Evaluation<Population_size, std::array<int, Population_size> > >& eval_select,
+                  const std::function<const std::vector<char>&(const Genotype&)>& generate,
                   const std::function<void(std::vector<char>&, const Genotype&, float)>& mutate,
                   const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross
                   #ifdef LOG_STEPS
                     ,const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& log = Easy_Log_In_File_Threaded::getInstance()
                   #endif
-                 )
+              ) :
+    N_iterations(N_iterations),
+    nb_to_keep(to_keep)
+    random_individual(generate),
+    eval_and_select(eval_select),
+    mutate(mutate),
+    cross(cross),
+    genes(genes),
+    mutation_rate(mutation_rate)
     #ifdef LOG_STEPS
-        : logger(log)
+        logger(log),
     #endif
 {
-    assert(N>2);
-    assert(Population_size>=N);
+    assert(to_keep>2);
+    assert(Population_size>=to_keep);
 }
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
@@ -113,7 +127,7 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::generate_populati
         logger->write("[+] Generating ", Population_size, " sized population");
     #endif
     for(int i=0; i<(int)Population_size; i++)
-        bits_of_individuals = random_individual(genes);
+        bits_of_individuals[i] = random_individual(genes);
 }
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
@@ -142,12 +156,13 @@ void  Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross
     #endif
 
     //first individuals are selected ones
-    for(int i=0; i<nb_to_keep; i++)
+    for(int i=0; i<(int)nb_to_keep; i++)
         next_generation[i] = bits_of_individuals[sorted_selected[i]];
 
     //crossover
     int n_cuts = 1, n_choices = 1;
-    for(int i=nb_to_keep; i<Population_size;)
+    std::array<int, Population_size> cur_choice;
+    for(int i=nb_to_keep; i<(int)Population_size;)
     {
         //choose number of individuals that will be merged
         if(cross_multiple && proba_merging_n_individuals)
@@ -170,7 +185,7 @@ void  Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross
         }
 
         //we can't merge more individuals than possible
-        if(n_choices+i > Population_size)
+        if(n_choices+i > (int)Population_size)
             n_choices = Population_size-i;
 
         #ifdef LOG_STEPS
@@ -207,17 +222,12 @@ void  Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross
             #endif
 
             if(!proba_n_crossovers)
-                n_cuts = 1;
+                n_cuts = 2;
             else
             {
-                std::vector<float> probas = proba_n_crossovers(min);
-                std::array<MAX_N_CROSSOVERS, float> probas_array;
-                Quality_Selection<MAX_N_CROSSOVERS, float> q;
-                for(int j=0; j<MAX_N_CROSSOVERS && j<(int)probas.size(); j++)
-                    probas_array[j] = probas[j];
-
+                std::array<float, Max_nb_crossovers> probas = proba_n_crossovers(min);
                 Quality_Selection<Max_nb_crossovers, float> q;
-                auto chosen_cuts = q.apply(probas_array);
+                auto chosen_cuts = q.apply(probas);
                 n_cuts = chosen_cuts[0]+1;
             }
             #ifdef LOG_STEPS
@@ -243,7 +253,7 @@ void  Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross
     #endif
 
     //mutate
-    for(int i=nb_to_keep; i<Population_size; i++)
+    for(int i=nb_to_keep; i<(int)Population_size; i++)
         mutate(next_generation[i], genes, mutation_rate);
 
     //swap with normal population
@@ -260,7 +270,7 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::run()
         logger->write("[+] At the beginning evaluation should be bad : ", Vector_To_String<std::array<T,Population_size> >(&evaluated));
     #endif
 
-    for(int i=0; i<N_iterations;i++)
+    for(int i=0; i<(int)N_iterations;i++)
     {
         #ifdef LOG_STEPS
             logger->write("[+] Performing iteration ", i);
@@ -282,6 +292,8 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::run()
         #endif
     }
 }
+
+#include <set>
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
 void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::default_choose_individuals(int n_choices, std::array<int, Population_size>& cur_choice, int nb_to_keep)

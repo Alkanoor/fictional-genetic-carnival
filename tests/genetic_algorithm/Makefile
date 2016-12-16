@@ -1,4 +1,4 @@
-SRC_DIRS = ../../logger ../../threads ../../utils
+SRC_DIRS = ../../logger ../../threads ../../utils ../../algorithm
 OBJS = $(addsuffix /obj/*.o, $(SRC_DIRS))
 SRC = test.cpp
 
