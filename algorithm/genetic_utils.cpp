@@ -26,24 +26,20 @@ const std::vector<char>& Genetic_Utils::basic_random_individual_0_255(const Geno
     return individual;
 }
 
-std::vector<char> Genetic_Utils::static_basic_random_individual_0_1(const Genotype& genes)
+void Genetic_Utils::static_basic_random_individual_0_1(const Genotype& genes, std::vector<char>& ret)
 {
-    std::vector<char> ret;
     ret.resize(genes.get_max_location());
     int s = (int)ret.size();
     for(int i=0; i<s; i++)
         ret[i] = rand()%2;
-    return ret;
 }
 
-std::vector<char> Genetic_Utils::static_basic_random_individual_0_255(const Genotype& genes)
+void Genetic_Utils::static_basic_random_individual_0_255(const Genotype& genes, std::vector<char>& ret)
 {
-    std::vector<char> ret;
     ret.resize(genes.get_max_location());
     int s = (int)ret.size();
     for(int i=0; i<s; i++)
         ret[i] = rand()%256;
-    return ret;
 }
 
 

@@ -13,8 +13,8 @@ class Genetic_Utils
         const std::vector<char>& basic_random_individual_0_1(const Genotype& genes);
         const std::vector<char>& basic_random_individual_0_255(const Genotype& genes);
 
-        static std::vector<char> static_basic_random_individual_0_1(const Genotype& genes);
-        static std::vector<char> static_basic_random_individual_0_255(const Genotype& genes);
+        static void static_basic_random_individual_0_1(const Genotype& genes, std::vector<char>& ret);
+        static void static_basic_random_individual_0_255(const Genotype& genes, std::vector<char>& ret);
 
         static void mutate_basic_uniform(std::vector<char>& bits, const Genotype& genes, float mutation_rate, int min=0, int max=1);
         static void mutate_basic_per_gene(std::vector<char>& bits, const Genotype& genes, float mutation_rate, int min=0, int max=1);
