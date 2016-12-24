@@ -15,7 +15,7 @@ void Genotype::add_gene(const Gene<float>& g)
     float_interpreted.push_back(0);
     if(g.get_min_location() < min_adn_location)
         min_adn_location = g.get_min_location();
-    if(g.get_max_location() < max_adn_location)
+    if(g.get_max_location() > max_adn_location)
         max_adn_location = g.get_max_location();
 }
 
@@ -25,7 +25,7 @@ void Genotype::add_gene(const Gene<int>& g)
     integer_interpreted.push_back(0);
     if(g.get_min_location() < min_adn_location)
         min_adn_location = g.get_min_location();
-    if(g.get_max_location() < max_adn_location)
+    if(g.get_max_location() > max_adn_location)
         max_adn_location = g.get_max_location();
 }
 

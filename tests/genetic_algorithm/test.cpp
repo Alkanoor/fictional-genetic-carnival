@@ -34,7 +34,7 @@ int main()
     {
         std::ostringstream oss;
         oss<<"bit"<<i;
-        Gene<int> cur(oss.str(), 0, 1, "BINARY");
+        Gene<int> cur(oss.str(), i, i+1, "BINARY");
         genes.add_gene(cur);
     }
 

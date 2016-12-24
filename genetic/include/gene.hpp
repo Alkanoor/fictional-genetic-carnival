@@ -85,7 +85,7 @@ int Gene<T>::get_min_location() const
 
 template <typename T>
 int Gene<T>::get_max_location() const
-{return min_adn_location;}
+{return max_adn_location;}
 
 
 #endif
