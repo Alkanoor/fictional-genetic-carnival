@@ -14,6 +14,7 @@
 #include "selection/include/quality_selection.hpp"
 #include "algorithm/include/genetic_algorithm.hpp"
 #include "algorithm/include/basic_hook_logger.hpp"
+#include "selection/include/elit_selection.hpp"
 #include "utils/util.hpp"
 
 #include <sstream>
@@ -40,7 +41,8 @@ int main()
     }
 
     std::function<float(const std::vector<char>&, Genotype&)> eval_function = std::bind(eval, std::placeholders::_1, std::placeholders::_2);
-    auto select = std::make_shared<Quality_Selection<POPULATION_SIZE, float, 3> >();
+    auto select_quality = std::make_shared<Quality_Selection<POPULATION_SIZE, float, 3> >();
+    auto select = std::make_shared<Elit_Selection<POPULATION_SIZE, float, 3> >(1, select_quality);
     auto simple_sum = std::make_shared<Simple_Selection_On_Evaluation<POPULATION_SIZE, float, 3> >(eval_function, select);
     Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, 4, MUTATION_RATE, genes, simple_sum);
     ga.set_hook_object(std::shared_ptr<Hook_Object<float, POPULATION_SIZE> >(new Basic_Hook_Logger<float, POPULATION_SIZE>()));
