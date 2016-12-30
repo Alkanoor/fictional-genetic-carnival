@@ -3,16 +3,17 @@
 #include <chrono>
 #include <iostream>
 
-#define POPULATION_SIZE 150
+#define POPULATION_SIZE 10
 #define N_ITERATIONS 100
 #define MUTATION_RATE 0.07
-#define N_BITS 2000
+#define N_BITS 20
 
 
 #include "selection_on_evaluation/include/multi_criteria_selection_on_evaluation.hpp"
 #include "selection_on_evaluation/include/simple_selection_on_evaluation.hpp"
 #include "selection/include/quality_selection.hpp"
 #include "algorithm/include/genetic_algorithm.hpp"
+#include "algorithm/include/basic_hook_logger.hpp"
 #include "utils/util.hpp"
 
 #include <sstream>
@@ -24,7 +25,7 @@ int eval(const std::vector<char>& bits, Genotype& g)
     g.interprete(bits);
     for(int i=0; i<N_BITS; i++)
         s += g.get_gene_int(i).get_current_interpretation();
-    return s;
+    return s*s;
 }
 
 int main()
@@ -41,7 +42,8 @@ int main()
     std::function<float(const std::vector<char>&, Genotype&)> eval_function = std::bind(eval, std::placeholders::_1, std::placeholders::_2);
     auto select = std::make_shared<Quality_Selection<POPULATION_SIZE, float, 3> >();
     auto simple_sum = std::make_shared<Simple_Selection_On_Evaluation<POPULATION_SIZE, float, 3> >(eval_function, select);
-    Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, 50, MUTATION_RATE, genes, simple_sum);
+    Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, 4, MUTATION_RATE, genes, simple_sum);
+    ga.set_hook_object(std::shared_ptr<Hook_Object<float, POPULATION_SIZE> >(new Basic_Hook_Logger<float, POPULATION_SIZE>()));
 
     //comment next lines to see performance changes
     //Thread t1(1);

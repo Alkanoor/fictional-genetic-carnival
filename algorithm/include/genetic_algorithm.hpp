@@ -36,7 +36,7 @@
 ///                    genotype and number cuts to perform
 ///************************************************************************************************************
 
-template <size_t Population_size, typename T, size_t Max_nb_crossovers=10>
+template <size_t Population_size, typename T=float, size_t Max_nb_crossovers=10>
 class Genetic_Algorithm
 {
     public:
@@ -60,7 +60,7 @@ class Genetic_Algorithm
         const std::array<T, Population_size>& get_evaluated() const;
         const std::array<std::vector<char>, Population_size>& get_population() const;
 
-        void set_hook_object(const Hook_Object<T, Population_size>& hook);
+        void set_hook_object(const std::shared_ptr<Hook_Object<T, Population_size> >& hook);
 
         static void default_choose_individuals(int n_choices, std::array<int, Population_size>& cur_choice, int nb_to_keep);
 
@@ -92,8 +92,7 @@ class Genetic_Algorithm
             std::shared_ptr<Info_Warning_Error_Logger> logger;
         #endif
 
-        Hook_Object<T, Population_size> hook_object;
-        bool hook;
+        std::shared_ptr<Hook_Object<T, Population_size> > hook_object;
         void hook_data();
 };
 
@@ -147,7 +146,7 @@ void  Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::evaluate_and_sel
         logger->write("[.] Current selection order is ", Vector_To_String<std::array<int, Population_size> >(&sorted_selected));
     #endif
 
-    if(hook)
+    if(hook_object)
         evaluated = eval_and_select->eval(bits_of_individuals, genes);
 }
 
@@ -156,7 +155,10 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross_
 {
     #ifdef LOG_STEPS
         logger->write("[+] Crossing over on current population");
-        logger->write("[.] Keeping ", nb_to_keep, " individuals out of ", Population_size);
+        logger->write("[.] Keeping ", nb_to_keep, " individuals out of ", Population_size, " :");
+        for(int i=0; i<(int)nb_to_keep; i++)
+            (*logger)<<sorted_selected[i]<<" ";
+        logger->endLine();
     #endif
 
     //first individuals are selected ones
@@ -206,7 +208,7 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross_
         if(n_choices==1)
         {
             #ifdef LOG_STEPS
-                logger->write("[.] ", cur_choice[0], " individual is repeated");
+                logger->write("[.] ", cur_choice[0], " individual id is repeated");
             #endif
             next_generation[i] = bits_of_individuals[sorted_selected[cur_choice[0]]];
         }
@@ -236,7 +238,7 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross_
                 n_cuts = chosen_cuts[0]+1;
             }
             #ifdef LOG_STEPS
-                logger->write("[.] ", n_cuts, " will be performed");
+                logger->write("[.] ", n_cuts, " cuts will be performed");
             #endif
 
             if(n_choices==2)
@@ -281,13 +283,13 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::run()
             logger->write("[+] Performing iteration ", i);
         #endif
         evaluate_and_select();
-        if(hook)
+        if(hook_object)
             hook_data();
         mutate_and_cross_over();
     }
 
     evaluate_and_select();
-    if(hook)
+    if(hook_object)
         hook_data();
     else
     {
@@ -311,10 +313,9 @@ const std::array<std::vector<char>, Population_size>& Genetic_Algorithm<Populati
 {return bits_of_individuals;}
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
-void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::set_hook_object(const Hook_Object<T, Population_size>& hook)
+void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::set_hook_object(const std::shared_ptr<Hook_Object<T, Population_size> >& hook)
 {
     hook_object = hook;
-    hook = true;
 }
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
@@ -334,9 +335,9 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::default_choose_in
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
 void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::hook_data()
 {
-    hook_object.new_step();
-    hook_object.set(bits_of_individuals);
-    hook_object.set(evaluated);
+    hook_object->new_step();
+    hook_object->set(bits_of_individuals);
+    hook_object->set(evaluated);
 }
 
 

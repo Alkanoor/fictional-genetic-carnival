@@ -61,10 +61,10 @@ const std::array<T, Population_size>& Simple_Selection_On_Evaluation<Population_
 
         for(int i=0; i<(int)Population_size; i++)
         {
-            #ifdef SIMPLE_SELECTION_THREAD_DEBUG
-                logger->write("In simple selection applying evaluation on ", Vector_To_String_Force_Type<int, std::vector<char> >(&bits[i]));
-            #endif
             qualities[i] = evaluation(bits[i], genes);
+            #ifdef SIMPLE_SELECTION_THREAD_DEBUG
+                logger->write("In simple selection applying evaluation on ", Vector_To_String_Force_Type<int, std::vector<char> >(&bits[i]), " => Result : ", qualities[i]);
+            #endif
         }
 
         return qualities;
