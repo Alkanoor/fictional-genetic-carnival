@@ -46,7 +46,7 @@ class Genetic_Algorithm
                           const std::function<void(std::vector<char>&, const Genotype&, float)>& mutate = std::bind(&Genetic_Utils::mutate_basic_uniform_flip, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                           const std::function<void(std::vector<char>&, std::vector<char>&, const Genotype&, int)>& cross = std::bind(&Genetic_Utils::cross_basic, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                           #ifdef LOG_STEPS
-                            ,const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& log = Easy_Log_In_File_Threaded::getInfoLog()
+                             , const std::shared_ptr<Info_Warning_Error_Logger_Threaded>& log = Easy_Log_In_File_Threaded::getInfoLog()
                           #endif
                          );
 
