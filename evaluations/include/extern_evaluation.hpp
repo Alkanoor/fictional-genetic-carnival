@@ -4,9 +4,10 @@
 
 #define EXTERN_EVALUATION_LOG
 
-#include "logger/include/info_warning_error_logger.hpp"
+#include "logger/include/log_in_file.hpp"
 
-#include <cunistd>
+#include <sys/wait.h>
+#include <unistd.h>
 
 
 ///***************************************************************************************
@@ -20,12 +21,12 @@ class Extern_Evaluation
     public:
         Extern_Evaluation(const std::string& program_name, const std::string& output_path, char gene_separator = ',', char individual_separator = ';'
                           #ifdef EXTERN_EVALUATION_LOG
-                                , std::shared_ptr<Info_Warning_Error_Logger> logger = Easy_Log_In_File_Threaded::getInfoLog()
+                                , std::shared_ptr<Info_Warning_Error_Logger> logger = Easy_Log_In_File::getInfoLog()
                           #endif
-                          , std::shared_ptr<Info_Warning_Error_Logger> error_logger = Easy_Log_In_File_Threaded::getErrorLog());
+                          , std::shared_ptr<Info_Warning_Error_Logger> error_logger = Easy_Log_In_File::getErrorLog());
 
         const std::array<T, Population_size>& eval(const std::array<std::vector<char>, Population_size>& population, Genotype& genes);
-        T eval(const std::vector<char>& population, Genotype& genes);
+        T eval_atomic(const std::vector<char>& population, Genotype& genes);
 
     private:
         std::string program;
@@ -39,7 +40,7 @@ class Extern_Evaluation
 
         std::array<T, Population_size> temporary;
 
-        void fork_and_exec(const std::string& args);
+        int fork_and_exec(const std::string& args);
 };
 
 
@@ -58,35 +59,6 @@ Extern_Evaluation<T, Population_size>::Extern_Evaluation(const std::string& prog
 {}
 
 template <typename T, size_t Population_size>
-int Extern_Evaluation<T, Population_size>::fork_and_exec(const std::string& args)
-{
-    int pid = fork();
-    int status = -1;
-    if(pid<0)
-    {
-        error_logger->error("Error forking");
-        exit(-1);
-    }
-    else if(!pid)
-    {
-        char* argv[3] = {program.c_str(), args.c_str(), NULL};
-        execv(program.c_str(), argv);
-    }
-    else
-    {
-        #ifdef EXTERN_EVALUATION_LOG
-            info_logger->write("Launching evaluation program ", program, " with child pid ", pid);
-        #endif
-        wait(&status);
-        #ifdef EXTERN_EVALUATION_LOG
-            info_logger->write("Program return status : ", status);
-        #endif
-    }
-
-    return status;
-}
-
-template <typename T, size_t Population_size>
 const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eval(const std::array<std::vector<char>, Population_size>& population, Genotype& genes)
 {
     std::ostringstream args;
@@ -97,11 +69,11 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
             add_first = true;
         else
             args<<individual_separator;
-        add_first2 = false;
+        bool add_first2 = false;
 
         genes.interprete(individual);
 
-        int a = g.get_number_integer_genes();
+        int a = genes.get_number_integer_genes();
         for(int i=0; i<a; i++)
         {
             if(!add_first2)
@@ -111,7 +83,7 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
             args<<genes.get_gene_int(i).get_current_interpretation();
         }
 
-        a = g.get_number_float_genes();
+        a = genes.get_number_float_genes();
         for(int i=0; i<a; i++)
         {
             if(!add_first2)
@@ -124,19 +96,19 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
 
     fork_and_exec(args.str());
 
-    std::ifstream ifs(output_path, "rb");
-    for(int i=0; i<Population_size; i++)
+    std::ifstream ifs(output_path, std::ios::binary|std::ios::in);
+    for(int i=0; i<(int)Population_size; i++)
         ifs>>temporary[i];
 
     return temporary;
 }
 
 template <typename T, size_t Population_size>
-const T Extern_Evaluation<T, Population_size>::eval(const std::vector<char>& individual, Genotype& genes)
+T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& individual, Genotype& genes)
 {
     std::ostringstream args;
 
-    add_first = false;
+    bool add_first = false;
     genes.interprete(individual);
 
     int a = genes.get_number_integer_genes();
@@ -162,10 +134,43 @@ const T Extern_Evaluation<T, Population_size>::eval(const std::vector<char>& ind
     fork_and_exec(args.str());
 
     T ret;
-    std::ifstream ifs(output_path, "rb");
+    std::ifstream ifs(output_path, std::ios::binary|std::ios::in);
     ifs>>ret;
 
     return ret;
+}
+
+template <typename T, size_t Population_size>
+int Extern_Evaluation<T, Population_size>::fork_and_exec(const std::string& args)
+{
+    int pid = fork();
+    int status = -1;
+    if(pid<0)
+    {
+        error_logger->error("Error forking");
+        exit(-1);
+    }
+    else if(!pid)
+    {
+        char* argv[3] = {(char*)program.c_str(), (char*)args.c_str(), NULL};
+        if(execv(program.c_str(), argv)<0)
+        {
+            error_logger->error("Error during execv of ", program);
+            exit(-1);
+        }
+    }
+    else
+    {
+        #ifdef EXTERN_EVALUATION_LOG
+            info_logger->write("Launching evaluation program ", program, " with child pid ", pid);
+        #endif
+        wait(&status);
+        #ifdef EXTERN_EVALUATION_LOG
+            info_logger->write("Program return status : ", status);
+        #endif
+    }
+
+    return status;
 }
 
 

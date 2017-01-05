@@ -11,20 +11,22 @@
 
 #include "utils/vector_to_string_force_type.hpp"
 #include "selection/include/selection.hpp"
+#include "selection_on_evaluation.hpp"
 #include "utils/vector_to_string.hpp"
 
 
-///*********************************************************************************
-/// Class that provides basic composition of evaluation and selection on the result
-///*********************************************************************************
+///****************************************************************************************
+/// Class that provides basic composition of evaluation and selection on the result with
+/// all individuals at same time
+///****************************************************************************************
 
 template <size_t Population_size, typename T, size_t N_threads=1>
 class Simple_Selection_On_Evaluation_One_Block : public Selection_On_Evaluation<Population_size, T, std::array<int, Population_size> >
 {
     public:
-        Simple_Selection_On_Evaluation_One_Block(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select);
+        Simple_Selection_On_Evaluation_One_Block(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>&, Genotype&)>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select);
 
-        void set_evaluation_selection(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select);
+        void set_evaluation_selection(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>&, Genotype&)>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select);
 
         const std::array<T, Population_size>& eval(const std::array<std::vector<char>, Population_size>&, Genotype&) throw();
         const std::array<int, Population_size>& eval_select(const std::array<std::vector<char>, Population_size>&, Genotype&) throw();
@@ -38,13 +40,13 @@ class Simple_Selection_On_Evaluation_One_Block : public Selection_On_Evaluation<
 
 
 template <size_t Population_size, typename T, size_t N_threads>
-Simple_Selection_On_Evaluation_One_Block<Population_size, T, N_threads>::Simple_Selection_On_Evaluation_One_Block(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select) :
+Simple_Selection_On_Evaluation_One_Block<Population_size, T, N_threads>::Simple_Selection_On_Evaluation_One_Block(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>&, Genotype&)>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select) :
     evaluation(eval),
     selection(select)
 {}
 
 template <size_t Population_size, typename T, size_t N_threads>
-void Simple_Selection_On_Evaluation_One_Block<Population_size, T, N_threads>::set_evaluation_selection(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select)
+void Simple_Selection_On_Evaluation_One_Block<Population_size, T, N_threads>::set_evaluation_selection(const std::function<const std::array<T, Population_size>&(const std::array<std::vector<char>, Population_size>&, Genotype&)>& eval, const std::shared_ptr<Selection<Population_size,T,N_threads> >& select)
 {
     evaluation = eval;
     selection = select;
