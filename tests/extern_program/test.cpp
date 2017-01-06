@@ -4,8 +4,8 @@
 #include <sstream>
 #include <chrono>
 
-#define POPULATION_SIZE 100
-#define N_ITERATIONS 100
+#define POPULATION_SIZE 200
+#define N_ITERATIONS 500
 #define MUTATION_RATE 0.07
 #define N_BITS 1024
 
@@ -34,7 +34,7 @@ int main()
     auto select_quality = std::make_shared<Quality_Selection<POPULATION_SIZE, float, 3> >();
     auto select = std::make_shared<Elit_Selection<POPULATION_SIZE, float, 3> >(1, select_quality);
     auto extern_selection = std::make_shared<Simple_Selection_On_Evaluation_One_Block<POPULATION_SIZE, float, 3> >(eval_function, select);
-    Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, 5, MUTATION_RATE, genes, extern_selection);
+    Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, 100, MUTATION_RATE, genes, extern_selection);
     ga.set_hook_object(std::shared_ptr<Hook_Object<float, POPULATION_SIZE> >(new Basic_Hook_Logger<float, POPULATION_SIZE>()));
 
     //comment next lines to see performance changes

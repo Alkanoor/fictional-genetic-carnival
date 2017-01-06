@@ -7,7 +7,9 @@
 #include "logger/include/log_in_file.hpp"
 
 #include <sys/wait.h>
+#include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 
 ///***************************************************************************************
@@ -153,9 +155,9 @@ int Extern_Evaluation<T, Population_size>::fork_and_exec(const std::string& args
     else if(!pid)
     {
         char* argv[3] = {(char*)program.c_str(), (char*)args.c_str(), NULL};
-        if(execv(program.c_str(), argv)<0)
+        if(execv(argv[0], argv)<0)
         {
-            error_logger->error("Error during execv of ", program);
+            error_logger->error("Error during execv of ", program, " : ", strerror(errno));
             exit(-1);
         }
     }
