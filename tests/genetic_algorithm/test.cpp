@@ -1,4 +1,4 @@
-/* This test provides a proof of concept concerning multi criteria evaluation */
+/* This test provides a proof of concept concerning genetic algorithm and time improvement with threading */
 
 #include <chrono>
 #include <iostream>
@@ -6,7 +6,7 @@
 #define POPULATION_SIZE 10
 #define N_ITERATIONS 100
 #define MUTATION_RATE 0.07
-#define N_BITS 20
+#define N_BITS 2000
 
 
 #include "selection_on_evaluation/include/multi_criteria_selection_on_evaluation.hpp"
@@ -48,8 +48,8 @@ int main()
     ga.set_hook_object(std::shared_ptr<Hook_Object<float, POPULATION_SIZE> >(new Basic_Hook_Logger<float, POPULATION_SIZE>()));
 
     //comment next lines to see performance changes
-    //Thread t1(1);
-    //Thread t2(2);
+    /*Thread t1(1);
+    Thread t2(2);*/
 
     auto start = std::chrono::system_clock::now();
     ga.run();

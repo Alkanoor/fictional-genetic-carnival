@@ -4,7 +4,7 @@
 #include <sstream>
 #include <chrono>
 
-#define POPULATION_SIZE 10
+#define POPULATION_SIZE 100
 #define N_ITERATIONS 100
 #define MUTATION_RATE 0.07
 #define N_BITS 1024
@@ -17,7 +17,6 @@
 #include "algorithm/include/basic_hook_logger.hpp"
 #include "selection/include/elit_selection.hpp"
 #include "utils/util.hpp"
-
 
 int main()
 {

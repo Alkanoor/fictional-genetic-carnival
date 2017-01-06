@@ -78,7 +78,7 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
         {
             if(!add_first2)
                 add_first2 = true;
-            else
+            else if(gene_separator)
                 args<<gene_separator;
             args<<genes.get_gene_int(i).get_current_interpretation();
         }
@@ -88,7 +88,7 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
         {
             if(!add_first2)
                 add_first2 = true;
-            else
+            else if(gene_separator)
                 args<<gene_separator;
             args<<genes.get_gene_float(i).get_current_interpretation();
         }
@@ -116,7 +116,7 @@ T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& in
     {
         if(!add_first)
             add_first = true;
-        else
+        else if(gene_separator)
             args<<gene_separator;
         args<<genes.get_gene_int(i).get_current_interpretation();
     }
@@ -126,7 +126,7 @@ T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& in
     {
         if(!add_first)
             add_first = true;
-        else
+        else if(gene_separator)
             args<<gene_separator;
         args<<genes.get_gene_float(i).get_current_interpretation();
     }

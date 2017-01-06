@@ -10,7 +10,9 @@ std::map<int, Thread*> Thread::threads;
     Thread_Pool Thread::default_pool;
 #endif
 
-std::shared_ptr<Info_Warning_Error_Logger_Threaded_Debug> Thread::debug_logger;
+#ifdef LOG_MUTEX_DEBUG
+    std::shared_ptr<Info_Warning_Error_Logger_Threaded_Debug> Thread::debug_logger;
+#endif
 
 
 Thread::Thread(int id, bool autostart, double sleep_between_instances, double sleep_between_operations, const std::function<void(double)>& sleep_function
@@ -101,6 +103,7 @@ bool Thread::start()
     return true;
 }
 
+#include <iostream>
 void Thread::restart()
 {
     if(!terminated)
@@ -130,6 +133,9 @@ void Thread::restart()
             #ifdef LOG_MUTEX_DEBUG
                 debug_logger->write("New thread for id ", thread_id);
             #endif
+
+            if(thread.joinable())
+                thread.join();
             thread = std::thread(std::bind(&Thread::run, this));
         }
 
@@ -369,14 +375,14 @@ void Thread::run()
     mutex_on_to_exec.unlock();
 
     #ifdef LOG_MUTEX_DEBUG
-        debug_logger->write("Unlock mutex on data in run in thread ", thread_id);
+        debug_logger->write("Unlock mutex on data in run in thread ", thread_id, ", leaving");
     #endif
 
     is_finished = true;
     mutex_on_finished.unlock();
 
     #ifdef LOG_MUTEX_DEBUG
-        debug_logger->write("Unlock mutex on logic in run in thread ", thread_id);
+        debug_logger->write("Unlock mutex on logic in run in thread ", thread_id, ", leaving");
     #endif
 }
 

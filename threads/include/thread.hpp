@@ -3,9 +3,9 @@
 
 
 #define ADD_TO_DEFAULT_POOL
-#define LOG_MUTEX_DEBUG
+//#define LOG_MUTEX_DEBUG
 #define LOG_EXCEPTIONS
-#define LOG_EVENTS
+//#define LOG_EVENTS
 
 
 #include <map>
