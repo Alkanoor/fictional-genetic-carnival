@@ -26,13 +26,20 @@ class Extern_Evaluation
                                 , std::shared_ptr<Info_Warning_Error_Logger> logger = Easy_Log_In_File::getInfoLog()
                           #endif
                           , std::shared_ptr<Info_Warning_Error_Logger> error_logger = Easy_Log_In_File::getErrorLog());
+        Extern_Evaluation(const std::string& program_name, const std::string& output_path, const std::string& input_path, char gene_separator = ',', char individual_separator = ';'
+                          #ifdef EXTERN_EVALUATION_LOG
+                                , std::shared_ptr<Info_Warning_Error_Logger> logger = Easy_Log_In_File::getInfoLog()
+                          #endif
+                          , std::shared_ptr<Info_Warning_Error_Logger> error_logger = Easy_Log_In_File::getErrorLog());
 
         const std::array<T, Population_size>& eval(const std::array<std::vector<char>, Population_size>& population, Genotype& genes);
         T eval_atomic(const std::vector<char>& population, Genotype& genes);
 
     private:
         std::string program;
+        std::string input_path;
         std::string output_path;
+        bool use_file_as_input;
         char gene_separator, individual_separator;
 
         std::shared_ptr<Info_Warning_Error_Logger> error_logger;
@@ -42,7 +49,7 @@ class Extern_Evaluation
 
         std::array<T, Population_size> temporary;
 
-        int fork_and_exec(const std::string& args);
+        int fork_and_exec(const std::string& args = "");
 };
 
 
@@ -54,6 +61,23 @@ Extern_Evaluation<T, Population_size>::Extern_Evaluation(const std::string& prog
                                         , std::shared_ptr<Info_Warning_Error_Logger> error_logger) :
     program(program_name),
     output_path(output_path),
+    use_file_as_input(false),
+    gene_separator(gene_separator),
+    individual_separator(individual_separator),
+    error_logger(error_logger),
+    info_logger(logger)
+{}
+
+template <typename T, size_t Population_size>
+Extern_Evaluation<T, Population_size>::Extern_Evaluation(const std::string& program_name, const std::string& output_path, const std::string& input_path, char gene_separator, char individual_separator
+                                        #ifdef EXTERN_EVALUATION_LOG
+                                              , std::shared_ptr<Info_Warning_Error_Logger> logger
+                                        #endif
+                                        , std::shared_ptr<Info_Warning_Error_Logger> error_logger) :
+    program(program_name),
+    input_path(input_path),
+    output_path(output_path),
+    use_file_as_input(true),
     gene_separator(gene_separator),
     individual_separator(individual_separator),
     error_logger(error_logger),
@@ -64,13 +88,18 @@ template <typename T, size_t Population_size>
 const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eval(const std::array<std::vector<char>, Population_size>& population, Genotype& genes)
 {
     std::ostringstream args;
+    std::ofstream ofs(input_path, std::ios::out);
+
     bool add_first = false;
     for(const std::vector<char>& individual : population)
     {
         if(!add_first)
             add_first = true;
         else
-            args<<individual_separator;
+            if(use_file_as_input)
+                ofs<<individual_separator;
+            else
+                args<<individual_separator;
         bool add_first2 = false;
 
         genes.interprete(individual);
@@ -81,8 +110,16 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
             if(!add_first2)
                 add_first2 = true;
             else if(gene_separator)
-                args<<gene_separator;
-            args<<genes.get_gene_int(i).get_current_interpretation();
+            {
+                if(use_file_as_input)
+                    ofs<<gene_separator;
+                else
+                    args<<gene_separator;
+            }
+            if(use_file_as_input)
+                ofs<<genes.get_gene_int(i).get_current_interpretation();
+            else
+                args<<genes.get_gene_int(i).get_current_interpretation();
         }
 
         a = genes.get_number_float_genes();
@@ -91,12 +128,23 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
             if(!add_first2)
                 add_first2 = true;
             else if(gene_separator)
-                args<<gene_separator;
-            args<<genes.get_gene_float(i).get_current_interpretation();
+            {
+                if(use_file_as_input)
+                    ofs<<gene_separator;
+                else
+                    args<<gene_separator;
+            }
+            if(use_file_as_input)
+                ofs<<genes.get_gene_float(i).get_current_interpretation();
+            else
+                args<<genes.get_gene_float(i).get_current_interpretation();
         }
     }
 
-    fork_and_exec(args.str());
+    if(use_file_as_input)
+        fork_and_exec();
+    else
+        fork_and_exec(args.str());
 
     std::ifstream ifs(output_path, std::ios::binary|std::ios::in);
     for(int i=0; i<(int)Population_size; i++)
@@ -109,6 +157,7 @@ template <typename T, size_t Population_size>
 T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& individual, Genotype& genes)
 {
     std::ostringstream args;
+    std::ofstream ofs(input_path, std::ios::out);
 
     bool add_first = false;
     genes.interprete(individual);
@@ -119,8 +168,16 @@ T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& in
         if(!add_first)
             add_first = true;
         else if(gene_separator)
-            args<<gene_separator;
-        args<<genes.get_gene_int(i).get_current_interpretation();
+        {
+            if(use_file_as_input)
+                ofs<<gene_separator;
+            else
+                args<<gene_separator;
+        }
+        if(use_file_as_input)
+            ofs<<genes.get_gene_int(i).get_current_interpretation();
+        else
+            args<<genes.get_gene_int(i).get_current_interpretation();
     }
 
     a = genes.get_number_float_genes();
@@ -129,11 +186,22 @@ T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& in
         if(!add_first)
             add_first = true;
         else if(gene_separator)
-            args<<gene_separator;
-        args<<genes.get_gene_float(i).get_current_interpretation();
+        {
+            if(use_file_as_input)
+                ofs<<gene_separator;
+            else
+                args<<gene_separator;
+        }
+        if(use_file_as_input)
+            ofs<<genes.get_gene_float(i).get_current_interpretation();
+        else
+            args<<genes.get_gene_float(i).get_current_interpretation();
     }
 
-    fork_and_exec(args.str());
+    if(use_file_as_input)
+        fork_and_exec();
+    else
+        fork_and_exec(args.str());
 
     T ret;
     std::ifstream ifs(output_path, std::ios::binary|std::ios::in);
@@ -154,11 +222,23 @@ int Extern_Evaluation<T, Population_size>::fork_and_exec(const std::string& args
     }
     else if(!pid)
     {
-        char* argv[3] = {(char*)program.c_str(), (char*)args.c_str(), NULL};
-        if(execv(argv[0], argv)<0)
+        if(args.size())
         {
-            error_logger->error("Error during execv of ", program, " : ", strerror(errno));
-            exit(-1);
+            char* argv[3] = {(char*)program.c_str(), (char*)args.c_str(), NULL};
+            if(execv(argv[0], argv)<0)
+            {
+                error_logger->error("Error during execv of ", program, " : ", strerror(errno));
+                exit(-1);
+            }
+        }
+        else
+        {
+            char* argv[2] = {(char*)program.c_str(), NULL};
+            if(execv(argv[0], argv)<0)
+            {
+                error_logger->error("Error during execv of ", program, " : ", strerror(errno));
+                exit(-1);
+            }
         }
     }
     else

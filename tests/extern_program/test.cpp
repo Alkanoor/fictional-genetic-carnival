@@ -12,6 +12,7 @@
 
 #include "selection_on_evaluation/include/simple_selection_on_evaluation_one_block.hpp"
 #include "evaluations/include/extern_evaluation.hpp"
+#include "threads/include/thread_pool.hpp"
 #include "selection/include/quality_selection.hpp"
 #include "algorithm/include/genetic_algorithm.hpp"
 #include "algorithm/include/basic_hook_logger.hpp"
@@ -29,7 +30,7 @@ int main()
         genes.add_gene(cur);
     }
 
-    Extern_Evaluation<float, POPULATION_SIZE> evaluation("ResultSender.py", "data", 0);
+    Extern_Evaluation<float, POPULATION_SIZE> evaluation("ResultSender.py", "data", "data_out", 0);
     std::function<const std::array<float, POPULATION_SIZE>& (const std::array<std::vector<char>, POPULATION_SIZE>&, Genotype&)> eval_function = std::bind(&Extern_Evaluation<float, POPULATION_SIZE>::eval, evaluation, std::placeholders::_1, std::placeholders::_2);
     auto select_quality = std::make_shared<Quality_Selection<POPULATION_SIZE, float, 3> >();
     auto select = std::make_shared<Elit_Selection<POPULATION_SIZE, float, 3> >(1, select_quality);
