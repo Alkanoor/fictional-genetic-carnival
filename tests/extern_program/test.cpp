@@ -4,20 +4,20 @@
 #include <sstream>
 #include <chrono>
 
-#define POPULATION_SIZE 100
-#define N_ITERATIONS 150
+
+#define POPULATION_SIZE 150
+#define N_ITERATIONS 50
 #define MUTATION_RATE 0.07
 #define N_BITS 1024
-#define TO_KEEP 30
-
+#define TO_KEEP 50
 
 #include "selection_on_evaluation/include/simple_selection_on_evaluation_one_block.hpp"
 #include "evaluations/include/extern_evaluation.hpp"
-#include "threads/include/thread_pool.hpp"
 #include "selection/include/quality_selection.hpp"
 #include "algorithm/include/genetic_algorithm.hpp"
 #include "algorithm/include/basic_hook_logger.hpp"
 #include "selection/include/elit_selection.hpp"
+#include "threads/include/thread_pool.hpp"
 #include "utils/util.hpp"
 
 int main()

@@ -49,7 +49,7 @@ namespace Interpretation
             if(max-min > 0)
                 impl::normalization_factors<U>[max-min]--;
         }
-        
+
         return (U)binary_interpretation<T, V>(adn, min, max)/impl::normalization_factors<U>[max-min];
     }
 }
