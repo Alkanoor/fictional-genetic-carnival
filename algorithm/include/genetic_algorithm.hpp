@@ -159,13 +159,6 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross_
         for(int i=0; i<(int)nb_to_keep; i++)
             (*logger)<<sorted_selected[i]<<" ";
         logger->endLine();
-		if(hook_object)
-		{
-			logger->write("That evaluates (begin) to");
-			for(int i=0; i<(int)nb_to_keep; i++)
-				(*logger)<<evaluated[sorted_selected[i]]<<" ";
-			logger->endLine();
-		}
     #endif
 
     //first individuals are selected ones
@@ -272,12 +265,6 @@ void Genetic_Algorithm<Population_size, T, Max_nb_crossovers>::mutate_and_cross_
 
     //swap with normal population
     std::swap(bits_of_individuals, next_generation);
-
-	evaluated = eval_and_select->eval(bits_of_individuals, genes);
-	logger->write("That evaluates (end) to");
-	for(int i=0; i<(int)Population_size; i++)
-		(*logger)<<evaluated[i]<<" ";
-	logger->endLine();
 }
 
 template <size_t Population_size, typename T, size_t Max_nb_crossovers>
