@@ -9,11 +9,7 @@ nbit = 8
 maxbit = 2**(nbit-1)
 coeff = 1.*max/maxbit
 
-sequence = sys.argv[1]
-print(sys.argv)
-
-sequence = sequence.split(";")
-print(sequence)
+sequence = open('data_in','rb').read().split(";")
 
 instructions = [[] for elt in sequence]
 for i, elt in enumerate(sequence):

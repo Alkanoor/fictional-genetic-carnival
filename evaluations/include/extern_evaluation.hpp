@@ -88,7 +88,7 @@ template <typename T, size_t Population_size>
 const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eval(const std::array<std::vector<char>, Population_size>& population, Genotype& genes)
 {
     std::ostringstream args;
-    std::ofstream ofs(input_path, std::ios::out);
+    std::ofstream ofs(input_path, std::ios::out|std::ios::trunc);
 
     bool add_first = false;
     for(const std::vector<char>& individual : population)
@@ -140,6 +140,7 @@ const std::array<T, Population_size>& Extern_Evaluation<T, Population_size>::eva
                 args<<genes.get_gene_float(i).get_current_interpretation();
         }
     }
+    ofs.close();
 
     if(use_file_as_input)
         fork_and_exec();
@@ -157,7 +158,7 @@ template <typename T, size_t Population_size>
 T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& individual, Genotype& genes)
 {
     std::ostringstream args;
-    std::ofstream ofs(input_path, std::ios::out);
+    std::ofstream ofs(input_path, std::ios::out|std::ios::trunc);
 
     bool add_first = false;
     genes.interprete(individual);
@@ -197,6 +198,7 @@ T Extern_Evaluation<T, Population_size>::eval_atomic(const std::vector<char>& in
         else
             args<<genes.get_gene_float(i).get_current_interpretation();
     }
+    ofs.close();
 
     if(use_file_as_input)
         fork_and_exec();

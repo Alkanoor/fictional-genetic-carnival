@@ -4,10 +4,11 @@
 #include <sstream>
 #include <chrono>
 
-#define POPULATION_SIZE 200
-#define N_ITERATIONS 500
+#define POPULATION_SIZE 100
+#define N_ITERATIONS 150
 #define MUTATION_RATE 0.07
 #define N_BITS 1024
+#define TO_KEEP 30
 
 
 #include "selection_on_evaluation/include/simple_selection_on_evaluation_one_block.hpp"
@@ -30,12 +31,12 @@ int main()
         genes.add_gene(cur);
     }
 
-    Extern_Evaluation<float, POPULATION_SIZE> evaluation("ResultSender.py", "data", "data_out", 0);
+    Extern_Evaluation<float, POPULATION_SIZE> evaluation("ResultSender.py", "data", "data_in", 0);
     std::function<const std::array<float, POPULATION_SIZE>& (const std::array<std::vector<char>, POPULATION_SIZE>&, Genotype&)> eval_function = std::bind(&Extern_Evaluation<float, POPULATION_SIZE>::eval, evaluation, std::placeholders::_1, std::placeholders::_2);
     auto select_quality = std::make_shared<Quality_Selection<POPULATION_SIZE, float, 3> >();
     auto select = std::make_shared<Elit_Selection<POPULATION_SIZE, float, 3> >(1, select_quality);
     auto extern_selection = std::make_shared<Simple_Selection_On_Evaluation_One_Block<POPULATION_SIZE, float, 3> >(eval_function, select);
-    Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, 100, MUTATION_RATE, genes, extern_selection);
+    Genetic_Algorithm<POPULATION_SIZE, float> ga(N_ITERATIONS, TO_KEEP, MUTATION_RATE, genes, extern_selection);
     ga.set_hook_object(std::shared_ptr<Hook_Object<float, POPULATION_SIZE> >(new Basic_Hook_Logger<float, POPULATION_SIZE>()));
 
     //comment next lines to see performance changes

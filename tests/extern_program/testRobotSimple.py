@@ -168,7 +168,7 @@ def stepByStep(stepByStepSeq):
 
 def evaluate():
     objectif=[0,50,5]
-    dist=distancePointPoint(objectif,ObjetParNom["centre"][0])
+    dist=distancePointPoint(objectif,listeObjets[6])
     return(min(1,1/dist))
 
 def reInit():
