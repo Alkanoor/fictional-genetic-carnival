@@ -119,11 +119,11 @@ Log_In_File<Logger_Type>::Log_In_File(const std::string& folderPath) :
 
 template <typename Logger_Type>
 Log_In_File<Logger_Type>::Log_In_File(const Log_In_File& cpy)
-{}
+{(void)cpy;}
 
 template <typename Logger_Type>
 Log_In_File<Logger_Type>& Log_In_File<Logger_Type>::operator = (const Log_In_File<Logger_Type>& noCpy)
-{return *instance;}
+{(void)noCpy;return *instance;}
 
 
 #endif
